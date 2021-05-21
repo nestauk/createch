@@ -10,6 +10,12 @@
   - Configure pre-commit
   - Configure metaflow to use AWS
 
+## Features
+
+Run `python createch/getters/gtr.py` to fetch gtr project descriptions, funders, topics and a link table for merging them.
+
+We still need to create getters for gtr organisation data and locations
+
 ## Contributor guidelines
 
 [Technical and working style guidelines](https://github.com/nestauk/ds-cookiecutter/blob/master/GUIDELINES.md)
