@@ -47,7 +47,7 @@ def filter_projects(
 def fetch_save_gtr_tables():
     projects = fetch_daps_table("gtr_projects", GTR_PATH, PROJECT_FIELDS)
     funders = fetch_daps_table("gtr_funds", GTR_PATH)
-    topics = fetch_daps_table("gtr_topics", GTR_PATH)
+    topics = fetch_daps_table("gtr_topic", GTR_PATH)
     link = fetch_daps_table("gtr_link_table", GTR_PATH)
 
     projects_filtered = filter_projects(projects, link, funders)
