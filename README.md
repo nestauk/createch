@@ -12,6 +12,13 @@
 
 ## Features
 
+Run `python createch/getters/crunchbase.py` to fetch and save relevant CrunchBase tables including:
+
+- `crunchbase_organizations`: CrunchBase organisations in the UK
+- `crunchbase_funding_rounds`: CrunchBase funding rounds in the UK
+- `crunchbase_organizations_categories`: lookup between CrunchBase organisations in the UK and their categories
+- `crunchbase_category_groups`: Lookup between crunchbase categories and higher level categories.
+
 Run `python createch/getters/gtr.py` to fetch:
 
 - `gtr_projects`
