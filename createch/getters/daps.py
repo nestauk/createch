@@ -1,7 +1,6 @@
 # Generic scripts to get DAPS tables
 
 import logging
-import os
 
 import pandas as pd
 from data_getters.core import get_engine
@@ -21,18 +20,14 @@ def fetch_daps_table(table_name: str, path: str, fields: str = "all") -> pd.Data
     Returns:
         table
     """
-    if os.path.join(path, f"{table_name}.csv") is True:
-        logging.info(f"Already fetched {table_name}")
-        return get_daps_table(table_name, path)
-    else:
-        logging.info(f"Fetching {table_name}")
-        con = get_engine(MYSQL_CONFIG)
+    logging.info(f"Fetching {table_name}")
+    con = get_engine(MYSQL_CONFIG)
 
-        if fields == "all":
-            chunks = pd.read_sql_table(table_name, con, chunksize=1000)
-        else:
-            chunks = pd.read_sql_table(table_name, con, fields, chunksize=1000)
-        return pd.concat(chunks)
+    if fields == "all":
+        chunks = pd.read_sql_table(table_name, con, chunksize=1000)
+    else:
+        chunks = pd.read_sql_table(table_name, con, columns=fields, chunksize=1000)
+    return pd.concat(chunks)
 
 
 def save_daps_table(table: pd.DataFrame, name: str, path: str):
