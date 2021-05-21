@@ -12,7 +12,7 @@ from createch import PROJECT_DIR
 MYSQL_CONFIG = f"{PROJECT_DIR}/mysqldb_team.config"
 
 
-def fetch_daps_table(table_name: str, path: str, fields: "all") -> pd.DataFrame:
+def fetch_daps_table(table_name: str, path: str, fields: str = "all") -> pd.DataFrame:
     """Fetch DAPS tables if we don't have them already
     Args:
         table_name: name
