@@ -19,6 +19,15 @@ Run `python createch/getters/crunchbase.py` to fetch and save relevant CrunchBas
 - `crunchbase_organizations_categories`: lookup between CrunchBase organisations in the UK and their categories
 - `crunchbase_category_groups`: Lookup between crunchbase categories and higher level categories.
 
+Run `python createch/getters/gtr.py` to fetch:
+
+- `gtr_projects`
+- `gtr_funders` (which we use to get project start dates)
+- `gtr_topics`
+- `gtr_link_table` for merging various gtr tables
+
+We still need to create fetchers & queries for gtr organisation data and locations
+
 ## Contributor guidelines
 
 [Technical and working style guidelines](https://github.com/nestauk/ds-cookiecutter/blob/master/GUIDELINES.md)
