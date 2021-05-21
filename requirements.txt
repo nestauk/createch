@@ -1,0 +1,12 @@
+numpy
+scipy
+pandas
+matplotlib
+altair
+metaflow
+python-dotenv
+tqdm
+filelock
+typer
+sh
+git+ssh://git@github.com/nestauk/data_getters.git
