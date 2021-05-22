@@ -22,10 +22,11 @@ def get_tokenised(name: dict):
 
     if "crunchbase" in name:
         with open(f"{PROJECT_DIR}/outputs/data/crunchbase/{name}.json", "r") as infile:
-            return json.load(infile)
+            tok = json.load(infile)
     elif "gtr" in name:
-        with open(f"{PROJECT_DIR}/outputs/data/gtr/{name}.json", "w") as infile:
-            return json.load(infile)
+        with open(f"{PROJECT_DIR}/outputs/data/gtr/{name}.json", "r") as infile:
+            tok = json.load(infile)
+    return tok
 
 
 def save_model(model, path):
