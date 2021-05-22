@@ -28,6 +28,8 @@ Run `python createch/getters/gtr.py` to fetch:
 
 We still need to create fetchers & queries for gtr organisation data and locations
 
+Run `python createch/pipeline/model_tokenise.py` to tokenise {source} descriptions and train a word2vec model. The respective json files and models are saved in `outputs/{output_type}/{source}`
+
 ## Contributor guidelines
 
 [Technical and working style guidelines](https://github.com/nestauk/ds-cookiecutter/blob/master/GUIDELINES.md)
