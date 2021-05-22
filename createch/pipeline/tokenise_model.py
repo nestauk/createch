@@ -30,7 +30,8 @@ def read_process_text(source: str) -> dict:
 
         table = get_daps_table(
             "crunchbase_organisations", f"{PROJECT_DIR}/inputs/data/crunchbase"
-        )
+        ).drop_duplicates(subset=["id"])
+        logging.info(len(table))
 
         table["description"] = [
             row["long_description"]

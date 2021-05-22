@@ -1,4 +1,5 @@
 import os
+import logging
 
 import pandas as pd
 
@@ -30,6 +31,8 @@ def fetch_save_crunchbase():
     cb_uk = cb_orgs.loc[cb_orgs["country"] == "United Kingdom"].drop_duplicates(
         subset=["id"]
     )
+    logging.info(len(cb_uk))
+    save_daps_table(cb_uk, "crunchbase_organisations", CB_PATH)
 
     cb_uk_ids = set(cb_uk["id"])
 
@@ -41,7 +44,6 @@ def fetch_save_crunchbase():
 
     category_group = fetch_daps_table("crunchbase_category_groups", fields="all")
 
-    save_daps_table(cb_uk, "crunchbase_organisations", CB_PATH)
     save_daps_table(cb_funding_rounds_uk, "crunchbase_funding_rounds", CB_PATH)
     save_daps_table(cb_org_cats_uk, "crunchbase_organizations_categories", CB_PATH)
     save_daps_table(category_group, "crunchbase_category_groups", CB_PATH)
