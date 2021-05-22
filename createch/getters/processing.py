@@ -34,7 +34,7 @@ def save_model(model, path):
         pickle.dump(model, outfile)
 
 
-def get_model(model, path):
+def get_model(path):
     """Serialises model"""
     with open(f"{PROJECT_DIR}/{path}.p", "rb") as infile:
         return pickle.load(infile)
