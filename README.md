@@ -28,6 +28,8 @@ Run `python createch/getters/gtr.py` to fetch:
 
 We still need to create fetchers & queries for gtr organisation data and locations
 
+Run `python -m spacy download en_core_web_sm` to install the Spacy language model
+
 Run `python createch/pipeline/model_tokenise.py` to tokenise {source} descriptions and train a word2vec model. The respective json files and models are saved in `outputs/{output_type}/{source}`
 
 ## Contributor guidelines
