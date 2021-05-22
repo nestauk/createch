@@ -1,6 +1,7 @@
 # Getters for use while processing data
 
 import json
+import pickle
 
 from createch import PROJECT_DIR
 
@@ -25,3 +26,15 @@ def get_tokenised(name: dict):
     elif "gtr" in name:
         with open(f"{PROJECT_DIR}/outputs/data/gtr/{name}.json", "w") as infile:
             return json.load(infile)
+
+
+def save_model(model, path):
+    """Serialises model"""
+    with open(f"{PROJECT_DIR}/{path}.p", "wb") as outfile:
+        pickle.dump(model, outfile)
+
+
+def get_model(model, path):
+    """Serialises model"""
+    with open(f"{PROJECT_DIR}/{path}.p", "rb") as infile:
+        return pickle.load(infile)
