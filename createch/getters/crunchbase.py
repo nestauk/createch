@@ -27,7 +27,10 @@ def fetch_save_crunchbase():
     """Fetch and save crunchbase data"""
     cb_orgs = fetch_daps_table("crunchbase_organizations", CB_PATH, fields="all")
 
-    cb_uk = cb_orgs.loc[cb_orgs["country"] == "United Kingdom"]
+    cb_uk = cb_orgs.loc[cb_orgs["country"] == "United Kingdom"].drop_duplicates(
+        subset=["id"]
+    )
+
     cb_uk_ids = set(cb_uk["id"])
 
     cb_funding_rounds = fetch_daps_table(
