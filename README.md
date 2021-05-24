@@ -9,6 +9,7 @@
   - Setup the conda environment
   - Configure pre-commit
   - Configure metaflow to use AWS
+- Run `git clone https://github.com/martingerlach/hSBM_Topicmodel.git` inside `createch` to clone the `top-SBM` repo.
 
 ## Features
 
