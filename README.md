@@ -33,6 +33,8 @@ Run `python -m spacy download en_core_web_sm` to install the Spacy language mode
 
 Run `python createch/pipeline/model_tokenise.py` to tokenise {source} descriptions and train a word2vec model. The respective json files and models are saved in `outputs/{output_type}/{source}`
 
+Run `python createch/pipeline/semantic_identification.py` to expand technology vocabularies and tag relevant descriptions. The expanded vocabularies and id - area lookups are saved in `outputs/data/{source}`.
+
 ## Contributor guidelines
 
 [Technical and working style guidelines](https://github.com/nestauk/ds-cookiecutter/blob/master/GUIDELINES.md)
