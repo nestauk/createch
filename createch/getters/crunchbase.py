@@ -1,15 +1,31 @@
-import os
 import logging
+import os
+from functools import lru_cache
+from typing import Dict
 
 import pandas as pd
+from metaflow import namespace, Run
 
+import createch
 from createch import PROJECT_DIR
 from createch.getters.daps import fetch_daps_table, save_daps_table
 
+logger = logging.getLogger(__name__)
+namespace(None)
+
+RUN_ID: int = createch.config["flows"]["nesta"]["run_id"]
+
 CB_PATH = f"{PROJECT_DIR}/inputs/data/crunchbase"
 
-if os.path.exists(CB_PATH) is False:
-    os.makedirs(CB_PATH)
+
+@lru_cache()
+def _flow(run_id: int) -> Run:
+    return Run(f"CreatechNestaGetter/{run_id}")
+
+
+def get_name() -> Dict[str, str]:
+    """Lookup between Crunchbase organisation ID and name."""
+    return _flow(RUN_ID).data.crunchbase_names
 
 
 def filter_uk(table: pd.DataFrame, ids: set, var_name: str = "org_id"):
@@ -56,4 +72,7 @@ def fetch_save_crunchbase():
 
 
 if __name__ == "__main__":
+    if os.path.exists(CB_PATH) is False:
+        os.makedirs(CB_PATH)
+
     fetch_save_crunchbase()

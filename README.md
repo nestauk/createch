@@ -13,6 +13,14 @@
 
 ## Features
 
+### Extra dependencies
+
+Run `python -m spacy download en_core_web_sm` to install the Spacy language model
+
+### Fetch data
+
+Run `make fetch-daps1` to Fetch GtR and CB names from `nesta/nestauk` (DAPS1)
+
 Run `python createch/getters/crunchbase.py` to fetch and save relevant CrunchBase tables including:
 
 - `crunchbase_organizations`: CrunchBase organisations in the UK
@@ -29,9 +37,11 @@ Run `python createch/getters/gtr.py` to fetch:
 
 We still need to create fetchers & queries for gtr organisation data and locations
 
-Run `python -m spacy download en_core_web_sm` to install the Spacy language model
+### Tokenise and Word2Vec source descriptions
 
 Run `python createch/pipeline/model_tokenise.py` to tokenise {source} descriptions and train a word2vec model. The respective json files and models are saved in `outputs/{output_type}/{source}`
+
+### Semantic identification
 
 Run `python createch/pipeline/semantic_identification.py` to expand technology vocabularies and tag relevant descriptions. The expanded vocabularies and id - area lookups are saved in `outputs/data/{source}`.
 

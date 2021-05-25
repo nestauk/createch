@@ -2,11 +2,14 @@
 # TODO: Add organisations and funding tables
 import logging
 import os
-from typing import Iterator
+from functools import lru_cache
+from typing import Dict, Iterator
 
 import pandas as pd
 from data_getters.core import get_engine
+from metaflow import namespace, Run
 
+import createch
 from createch import PROJECT_DIR
 from createch.getters.daps import (
     fetch_daps_table,
@@ -14,7 +17,23 @@ from createch.getters.daps import (
     stream_df_to_csv,
 )
 
+logger = logging.getLogger(__name__)
+
+namespace(None)
+
+RUN_ID: int = createch.config["flows"]["nesta"]["run_id"]
+
 GTR_PATH = os.path.join(PROJECT_DIR, "inputs/data/gtr")
+
+
+@lru_cache()
+def _flow(run_id: int) -> Run:
+    return Run(f"CreatechNestaGetter/{run_id}")
+
+
+def get_name() -> Dict[str, str]:
+    """Lookup between GtR organisation ID and name."""
+    return _flow(RUN_ID).data.gtr_names
 
 
 def projects_funded_from_2006() -> Iterator[pd.DataFrame]:
