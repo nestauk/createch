@@ -11,6 +11,7 @@
   - Configure metaflow to use AWS
 - Run `git clone https://github.com/martingerlach/hSBM_Topicmodel.git` inside `createch` to clone the `top-SBM` repo.
 - Add `MYSQL_CONFIG=path/to/sql/config` to `.env`
+- `conda config --add channels conda-forge`
 
 ## Features
 
@@ -48,6 +49,23 @@ Run `python createch/pipeline/semantic_identification.py` to expand technology v
 Run `python createch/pipeline//make_research_topic_partition.py` to produce a research topic co-occurrence network that we can use to produce a dataset labelled with research disciplines
 
 Run `python createch/pipeline/discipline_classifier.py` to create a labelled dataset using the community partitions above and train a model that predicts disciplines based on project descriptions.
+
+### Matching to Companies House
+
+Fuzzy-matching of GtR and Crunchbase to Companies House.
+
+#### Usage
+
+Getters for lookups between matched datasets are located in `createch/getters/jacchammer.py`.
+
+#### Reproduce
+
+- Run `make jacchammer`
+  - Runs in test-mode by default. To run the full process add `test_mode=false` as an argument to the make command (**warning: long-running process**)
+  - To run on AWS batch add `batch=true` as an argument to the make command
+- Update `flows.jacchammer.{gtr,crunchbase}.run_id` in `base.yaml` with run ids for each flow in order for getters to fetch updated run
+
+Alternatively, run individual `make` commands in `createch/pipelines/jacchammer`
 
 ## Contributor guidelines
 

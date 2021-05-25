@@ -42,4 +42,5 @@ def get_sector() -> pd.DataFrame:
 
 
 def get_name() -> pd.DataFrame:
+    """Returns companies house organisation name data."""
     return _flow(RUN_ID).data.organisationname
