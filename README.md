@@ -43,6 +43,26 @@ Run `python createch/pipeline/model_tokenise.py` to tokenise {source} descriptio
 
 Run `python createch/pipeline/semantic_identification.py` to expand technology vocabularies and tag relevant descriptions. The expanded vocabularies and id - area lookups are saved in `outputs/data/{source}`.
 
+### Matching to Companies House
+
+Fuzzy-matching of GtR and Crunchbase to Companies House.
+
+#### Usage
+
+Getters for lookups between matched datasets are located in `createch/getters/jacchammer.py`.
+
+#### Reproduce
+
+- `make fetch-daps1` - Fetch GtR and CB names from `nesta/nestauk`
+- `make match-crunchbase` - Match Crunchbase
+  - Update `flows.jacchammer.crunchbase.run_id` in `base.yaml` for getters to fetch updated run
+  - Runs in test-mode by default. To run the full process add `test_mode=false` as an argument to the make command (**warning: long-running process**)
+  - To run on AWS batch add `batch=true` as an argument to the make command
+- `make match-gtr` - Match Gateway to Research
+  - Update `flows.jacchammer.gtr.run_id` in `base.yaml` for getters to fetch updated run
+  - Runs in test-mode by default. To run the full process add `test_mode=false` as an argument to the make command (**warning: long-running process**)
+  - To run on AWS batch add `batch=true` as an argument to the make command
+
 ## Contributor guidelines
 
 [Technical and working style guidelines](https://github.com/nestauk/ds-cookiecutter/blob/master/GUIDELINES.md)
