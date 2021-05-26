@@ -1,6 +1,7 @@
 # Fetch GtR tables
 # TODO: Add organisations and funding tables
-
+import gc
+import logging
 import os
 
 import pandas as pd
@@ -21,6 +22,15 @@ PROJECT_FIELDS = [
 FUNDER_FIELDS = ["id", "start", "category", "amount"]
 
 
+def collect():
+    gc.collect()
+    return
+
+
+def filter_link(link):
+    return link.loc[lambda link: link.table_name == "gtr_funds"]
+
+
 def filter_projects(
     projects: pd.DataFrame, link: pd.DataFrame, funders: pd.DataFrame
 ) -> pd.DataFrame:
@@ -33,29 +43,46 @@ def filter_projects(
         Expanded and filtered project list
     """
     projects_filt = (
-        projects.rename(columns={"id": "project_id"})
-        .merge(link.query("table_name=='gtr_funds'"), on="project_id")
-        .merge(funders[["id", "start"]], on="id")
-        .drop_duplicates(subset=["project_id"])
-        .assign(year=lambda df: df["start"].map(lambda x: x.year))
-        .query("year>2006")
+        link.loc[lambda link: link.table_name == "gtr_funds"]
+        .merge(
+            funders[["id", "start"]]
+            .assign(year=lambda df: df["start"].map(lambda x: x.year))
+            .loc[lambda funders: funders.year > 2006, ("id", "year")],
+            on="id",
+        )
+        .merge(
+            projects.rename(columns={"id": "project_id"}).drop_duplicates(
+                subset=["project_id"]
+            ),
+            on="project_id",
+        )
         .reset_index(drop=True)
     )
+
     return projects_filt
 
 
 def fetch_save_gtr_tables():
-    projects = fetch_daps_table("gtr_projects", PROJECT_FIELDS)
+
     funders = fetch_daps_table("gtr_funds")
-    topics = fetch_daps_table("gtr_topic")
-    link = fetch_daps_table("gtr_link_table")
-
-    projects_filtered = filter_projects(projects, link, funders)
-
-    save_daps_table(projects_filtered, "gtr_projects", GTR_PATH)
-    save_daps_table(topics, "gtr_topic", GTR_PATH)
     save_daps_table(funders, "gtr_funds", GTR_PATH)
+
+    topics = fetch_daps_table("gtr_topic")
+    save_daps_table(topics, "gtr_topic", GTR_PATH)
+
+    link = fetch_daps_table("gtr_link_table")
     save_daps_table(link, "gtr_link_table", GTR_PATH)
+
+    # To reduce memory-usage:
+    # - shadowing `link` variable to get only data needed next
+    # - run garbage collector
+    link = filter_link(link)
+    collect()
+
+    logging.info("Filtering projects...")
+    projects = fetch_daps_table("gtr_projects", PROJECT_FIELDS)
+    projects_filtered = filter_projects(projects, link, funders)
+    save_daps_table(projects_filtered, "gtr_projects", GTR_PATH)
 
 
 if __name__ == "__main__":
