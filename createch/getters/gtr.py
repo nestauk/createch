@@ -1,13 +1,18 @@
 # Fetch GtR tables
-# TODO: Add organisations and funding tables
-
 import json
+import logging
 import os
+from typing import Iterator
 
 import pandas as pd
+from data_getters.core import get_engine
 
 from createch import config, PROJECT_DIR
-from createch.getters.daps import fetch_daps_table, save_daps_table
+from createch.getters.daps import (
+    fetch_daps_table,
+    MYSQL_CONFIG,
+    stream_df_to_csv,
+)
 
 GTR_PATH = os.path.join(PROJECT_DIR, "inputs/data/gtr")
 
@@ -87,41 +92,56 @@ def get_organisations():
     return orgs
 
 
-def filter_projects(
-    projects: pd.DataFrame, link: pd.DataFrame, funders: pd.DataFrame
-) -> pd.DataFrame:
-    """Merges GTR projects with funding information and filters by year
-    Args:
-        projects: project_table
-        link: link between projects and other gtr metadata
-        funders: funder information including project start date
+def projects_funded_from_2006() -> Iterator[pd.DataFrame]:
+    """GtR projects with funding starting from 2006.
+
     Returns:
-        Expanded and filtered project list
+        Iterable of query results
     """
-    projects_filt = (
-        projects.rename(columns={"id": "project_id"})
-        .merge(link.query("table_name=='gtr_funds'"), on="project_id")
-        .merge(funders[["id", "start"]], on="id")
-        .drop_duplicates(subset=["project_id"])
-        .assign(year=lambda df: df["start"].map(lambda x: x.year))
-        .query("year>2006")
-        .reset_index(drop=True)
-    )
-    return projects_filt
+    engine = get_engine(MYSQL_CONFIG)
+    con = engine.connect().execution_options(stream_results=True)
+    query = """
+    SELECT
+        DISTINCT gtr_projects.id AS project_id,
+        gtr_projects.title,
+        gtr_projects.grantCategory,
+        gtr_projects.leadFunder,
+        gtr_projects.abstractText,
+        gtr_projects.potentialImpact,
+        gtr_projects.techAbstractText,
+        gtr_funds.start
+    FROM
+        gtr_projects
+            INNER JOIN
+                (SELECT * FROM gtr_link_table
+                 WHERE gtr_link_table.table_name = 'gtr_funds')
+                AS l
+                ON l.project_id = gtr_projects.id
+            INNER JOIN
+                (SELECT * FROM gtr_funds
+                 WHERE YEAR(gtr_funds.start) > 2006)
+                AS gtr_funds
+                ON l.id = gtr_funds.id
+    GROUP BY gtr_projects.id HAVING MIN(YEAR(gtr_funds.start));
+    """
+
+    return pd.read_sql_query(query, con, chunksize=1000)
 
 
 def fetch_save_gtr_tables():
-    projects = fetch_daps_table("gtr_projects", PROJECT_FIELDS)
+
     funders = fetch_daps_table("gtr_funds")
+    stream_df_to_csv(funders, path_or_buf=f"{GTR_PATH}/gtr_funds.csv", index=False)
+
     topics = fetch_daps_table("gtr_topic")
+    stream_df_to_csv(topics, f"{GTR_PATH}/gtr_topics.csv", index=False)
+
     link = fetch_daps_table("gtr_link_table")
+    stream_df_to_csv(link, f"{GTR_PATH}/gtr_link_table.csv", index=False)
 
-    projects_filtered = filter_projects(projects, link, funders)
-
-    save_daps_table(projects_filtered, "gtr_projects", GTR_PATH)
-    save_daps_table(topics, "gtr_topic", GTR_PATH)
-    save_daps_table(funders, "gtr_funds", GTR_PATH)
-    save_daps_table(link, "gtr_link_table", GTR_PATH)
+    logging.info("Filtering projects...")
+    projects_filtered = projects_funded_from_2006()
+    stream_df_to_csv(projects_filtered, f"{GTR_PATH}/gtr_projects.csv", index=False)
 
 
 if __name__ == "__main__":
