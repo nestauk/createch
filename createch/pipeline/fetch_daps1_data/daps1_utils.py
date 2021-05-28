@@ -1,17 +1,13 @@
 # Generic scripts to get DAPS tables
-
 import logging
+import os
 from typing import Any, Iterator
-
 
 import pandas as pd
 
 # from pandas._typing import FilePathOrBuffer  # Not available in pandas < 1
 
-from createch import PROJECT_DIR
-
-
-MYSQL_CONFIG = f"{PROJECT_DIR}/mysqldb_team.config"
+MYSQL_CONFIG = os.environ["MYSQL_CONFIG"]
 
 
 def fetch_daps_table(table_name: str, fields: str = "all") -> pd.DataFrame:
