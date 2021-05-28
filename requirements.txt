@@ -9,6 +9,5 @@ tqdm
 filelock
 typer
 sh
-data_getters @ git+ssh://git@github.com/nestauk/data_getters.git
 gensim  # TODO: incompatible with data_getters
 spacy  # TODO: incompatible with data_getters

@@ -9,12 +9,14 @@ It pulls in all the dependencies of `nestauk/nesta` which are heavy
 and may conflict with newer packages hence, this fetching is encapsulated
 within a metaflow.
 """
-import json
 import os
 import sys
 from typing import Dict
 
 from metaflow import conda, FlowSpec, Parameter, step
+
+from createch.getters.crunchbase import CB_PATH, fetch_save_crunchbase
+from createch.getters.gtr import GTR_PATH, fetch_save_gtr_tables
 
 ENV_VAR = "MYSQL_CONFIG"
 
@@ -63,6 +65,32 @@ class CreatechNestaGetter(FlowSpec):
         self.crunchbase_names = get_names(con, "crunchbase_organizations")
 
         self.next(self.end)
+
+    @conda(python="3.7")
+    @step
+    def fetch_cb(self):
+        """Fetch Crunchbase tables."""
+        os.system(
+            f"{sys.executable} -m pip install --quiet "
+            "git+ssh://git@github.com/nestauk/data_getters.git"
+        )
+
+        if os.path.exists(CB_PATH) is False:
+            os.makedirs(CB_PATH)
+        fetch_save_crunchbase()
+
+    @conda(python="3.7")
+    @step
+    def fetch_gtr(self):
+        """Fetch GtR tables."""
+        os.system(
+            f"{sys.executable} -m pip install --quiet "
+            "git+ssh://git@github.com/nestauk/data_getters.git"
+        )
+
+        if os.path.exists(GTR_PATH) is False:
+            os.mkdir(GTR_PATH)
+        fetch_save_gtr_tables()
 
     @step
     def end(self):

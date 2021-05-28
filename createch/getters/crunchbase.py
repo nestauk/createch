@@ -69,10 +69,3 @@ def fetch_save_crunchbase():
     save_daps_table(cb_funding_rounds_uk, "crunchbase_funding_rounds", CB_PATH)
     save_daps_table(cb_org_cats_uk, "crunchbase_organizations_categories", CB_PATH)
     save_daps_table(category_group, "crunchbase_category_groups", CB_PATH)
-
-
-if __name__ == "__main__":
-    if os.path.exists(CB_PATH) is False:
-        os.makedirs(CB_PATH)
-
-    fetch_save_crunchbase()

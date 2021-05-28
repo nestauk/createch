@@ -86,10 +86,3 @@ def fetch_save_gtr_tables():
     logging.info("Filtering projects...")
     projects_filtered = projects_funded_from_2006()
     stream_df_to_csv(projects_filtered, f"{GTR_PATH}/gtr_projects.csv", index=False)
-
-
-if __name__ == "__main__":
-    if os.path.exists(GTR_PATH) is False:
-        os.mkdir(GTR_PATH)
-
-    fetch_save_gtr_tables()
