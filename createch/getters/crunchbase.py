@@ -26,7 +26,7 @@ def filter_uk(table: pd.DataFrame, ids: set, var_name: str = "org_id"):
 
 def fetch_save_crunchbase():
     """Fetch and save crunchbase data"""
-    cb_orgs = fetch_daps_table("crunchbase_organizations", fields="all")
+    cb_orgs = pd.concat(fetch_daps_table("crunchbase_organizations", fields="all"))
 
     cb_uk = cb_orgs.loc[cb_orgs["country"] == "United Kingdom"].drop_duplicates(
         subset=["id"]
@@ -36,13 +36,19 @@ def fetch_save_crunchbase():
 
     cb_uk_ids = set(cb_uk["id"])
 
-    cb_funding_rounds = fetch_daps_table("crunchbase_funding_rounds", fields="all")
+    cb_funding_rounds = pd.concat(
+        fetch_daps_table("crunchbase_funding_rounds", fields="all")
+    )
     cb_funding_rounds_uk = filter_uk(cb_funding_rounds, cb_uk_ids)
 
-    cb_orgs_cats = fetch_daps_table("crunchbase_organizations_categories", fields="all")
+    cb_orgs_cats = pd.concat(
+        fetch_daps_table("crunchbase_organizations_categories", fields="all")
+    )
     cb_org_cats_uk = filter_uk(cb_orgs_cats, cb_uk_ids, "organization_id")
 
-    category_group = fetch_daps_table("crunchbase_category_groups", fields="all")
+    category_group = pd.concat(
+        fetch_daps_table("crunchbase_category_groups", fields="all")
+    )
 
     save_daps_table(cb_funding_rounds_uk, "crunchbase_funding_rounds", CB_PATH)
     save_daps_table(cb_org_cats_uk, "crunchbase_organizations_categories", CB_PATH)
