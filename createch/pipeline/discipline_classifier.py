@@ -1,6 +1,7 @@
 # Build discipline labelled dataset and classify projects into disciplines
 
 import logging
+import warnings
 
 import pandas as pd
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
@@ -15,6 +16,9 @@ from sklearn.preprocessing import MultiLabelBinarizer
 from createch import config, PROJECT_DIR
 from createch.pipeline.make_research_topic_partition import make_network_analysis_inputs
 from createch.utils.io import get_lookup
+
+# Fiter deprecation warnings for sklearn
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
 def parse_parametres(parametre_list: list) -> list:
@@ -57,10 +61,14 @@ def make_labelled_dataset(
     project_discipline_lookup = dict(**project_discipline_lookup, **med_lookup)
 
     project_labelled = (
-        projects["project_id"]
-        .loc[[len(x) > 300 for x in projects["abstractText"]]]
-        .map(project_discipline_lookup)
+        projects.dropna(axis=0, subset=["abstractText"])
+        .assign(abstr_length=lambda df: [len(abst) for abst in df["abstractText"]])
+        .query("abstr_length>300")
+        .assign(
+            single_discipline=lambda df: df["project_id"].map(project_discipline_lookup)
+        )
         .dropna(axis=0, subset=["single_discipline"])
+        .drop(axis=1, labels=["abstr_length"])
         .reset_index(drop=True)
     )
 
@@ -100,6 +108,10 @@ if __name__ == "__main__":
     comm_discipline_names = {
         k: discipline_names[v] for k, v in comm_project_lookup.items()
     }
+
+    cat_coocc = categories_projects.groupby("project_id")["text"].apply(
+        lambda x: list(x)
+    )
 
     logging.info("Creating labelled dataset")
     project_labelled = make_labelled_dataset(

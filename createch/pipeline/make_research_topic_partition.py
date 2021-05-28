@@ -72,7 +72,7 @@ def get_community_names(partition, index_to_name):
 
 
 if __name__ == "__main__":
-    seed(78)
+    seed(888)
 
     logging.info("Make inputs")
     gtr_projects, categories_projects = make_network_analysis_inputs()
