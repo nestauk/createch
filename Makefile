@@ -1,4 +1,4 @@
-SHELL := /bin/bash
+export SHELL := /bin/bash
 
 # Detect how to open things depending on our OS
 OS = $(shell uname -s)
@@ -12,6 +12,7 @@ PROFILE = default
 # Import env variables
 include .env.shared
 include .env
+export BASE = $(shell pwd)
 
 # Allow us to execute make commands from within our project's conda env
 # TODO: add over-ride based on some environment variable?
@@ -19,15 +20,6 @@ include .env
 define execute_in_env
 	source bin/conda_activate.sh && conda_activate && $1
 endef
-
-# Default `test_mode` for metaflows
-test_mode = true
-
-# If `batch=true` define `batch_args`
-batch = false
-ifeq ($(batch),true)
-batch_args = --with batch:queue=job-queue-nesta-metaflow-test,memory=32000,cpu=1
-endif
 
 .PHONY: fetch-daps1
 ## Fetch GtR and crunchbase data from DAPS1
@@ -38,40 +30,10 @@ fetch-daps1:
 	 run\
 	 --db-config-path=${MYSQL_CONFIG}
 
-
-
-outputs/.cache/cb_names.json: createch/pipeline/jacchammer/crunchbase/prepare.py
-	python createch/pipeline/jacchammer/crunchbase/prepare.py
-
-outputs/.cache/gtr_names.json: createch/pipeline/jacchammer/gtr/prepare.py
-	python createch/pipeline/jacchammer/gtr/prepare.py
-
-.PHONY: match-crunchbase
-## Fuzzymatch Crunchbase to Companies House
-match-crunchbase: outputs/.cache/cb_names.json
-	python createch/pipeline/jacchammer/jacchammer.py\
-	 --environment=conda --no-pylint\
-	 run\
-	 --names-x outputs/.cache/company_names.json\
-	 --names-y outputs/.cache/cb_names.json\
-	 --clean_names true\
-	 --test_mode $(test_mode)\
-	 --run-id-file createch/config/metaflow_run_ids/jacchammer/crunchbase\
-	 $(batch_args)
-
-
-.PHONY: match-gtr
-## Fuzzymatch GtR to Companies House
-match-gtr: outputs/.cache/gtr_names.json
-	python createch/pipeline/jacchammer/jacchammer.py\
-	 --environment=conda --no-pylint\
-	 run\
-	 --names-x outputs/.cache/company_names.json\
-	 --names-y outputs/.cache/gtr_names.json\
-	 --clean_names true\
-	 --test_mode $(test_mode)\
-	 --run-id-file createch/config/metaflow_run_ids/gtr\
-	 $(batch_args)
+.PHONY: jacchammer
+## Fuzzy matching pipelines (match GtR & Crunchbase to Companies House)
+jacchammer:
+	$(MAKE) -C createch/pipeline/jacchammer
 
 .PHONY: init
 ## Fully initialise a project: install; setup github repo; setup S3 bucket

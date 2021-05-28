@@ -53,15 +53,12 @@ Getters for lookups between matched datasets are located in `createch/getters/ja
 
 #### Reproduce
 
-- `make fetch-daps1` - Fetch GtR and CB names from `nesta/nestauk`
-- `make match-crunchbase` - Match Crunchbase
-  - Update `flows.jacchammer.crunchbase.run_id` in `base.yaml` for getters to fetch updated run
+- Run `make jacchammer`
   - Runs in test-mode by default. To run the full process add `test_mode=false` as an argument to the make command (**warning: long-running process**)
   - To run on AWS batch add `batch=true` as an argument to the make command
-- `make match-gtr` - Match Gateway to Research
-  - Update `flows.jacchammer.gtr.run_id` in `base.yaml` for getters to fetch updated run
-  - Runs in test-mode by default. To run the full process add `test_mode=false` as an argument to the make command (**warning: long-running process**)
-  - To run on AWS batch add `batch=true` as an argument to the make command
+- Update `flows.jacchammer.{gtr,crunchbase}.run_id` in `base.yaml` with run ids for each flow in order for getters to fetch updated run
+
+Alternatively, run individual `make` commands in `createch/pipelines/jacchammer`
 
 ## Contributor guidelines
 
