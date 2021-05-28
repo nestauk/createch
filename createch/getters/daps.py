@@ -1,12 +1,13 @@
 # Generic scripts to get DAPS tables
 
 import logging
-from typing import Iterator
+from typing import Any, Iterator
 
 
 import pandas as pd
 from data_getters.core import get_engine
-from pandas._typing import FilePathOrBuffer
+
+# from pandas._typing import FilePathOrBuffer  # Not available in pandas < 1
 
 from createch import PROJECT_DIR
 
@@ -37,7 +38,7 @@ def fetch_daps_table(table_name: str, fields: str = "all") -> pd.DataFrame:
 
 def stream_df_to_csv(
     df_iterator: Iterator[pd.DataFrame],
-    path_or_buf: FilePathOrBuffer,
+    path_or_buf: Any,  # FilePathOrBuffer
     **kwargs,
 ):
     """Stream a DataFrame iterator to csv.
