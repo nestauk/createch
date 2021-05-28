@@ -31,6 +31,7 @@ class CreatechNestaGetter(FlowSpec):
     def fetch_names(self):
         """Fetch Organisation (GtR & crunchbase) names."""
         os.system(
+            f"{sys.executable} -m pip show data_getters ||"
             f"{sys.executable} -m pip install --quiet "
             "git+ssh://git@github.com/nestauk/data_getters.git"
         )
@@ -56,6 +57,7 @@ class CreatechNestaGetter(FlowSpec):
     def fetch_cb(self):
         """Fetch Crunchbase tables."""
         os.system(
+            f"{sys.executable} -m pip show data_getters ||"
             f"{sys.executable} -m pip install --quiet "
             "git+ssh://git@github.com/nestauk/data_getters.git"
         )
@@ -73,6 +75,7 @@ class CreatechNestaGetter(FlowSpec):
     def fetch_gtr(self):
         """Fetch GtR tables."""
         os.system(
+            f"{sys.executable} -m pip show data_getters ||"
             f"{sys.executable} -m pip install --quiet "
             "git+ssh://git@github.com/nestauk/data_getters.git"
         )
