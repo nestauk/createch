@@ -1,7 +1,7 @@
 # Generic scripts to get DAPS tables
 import logging
 import os
-from typing import Any, Iterator
+from typing import Any, Dict, Iterator
 
 import pandas as pd
 
@@ -72,11 +72,12 @@ def save_daps_table(table: pd.DataFrame, name: str, path: str):
     table.to_csv(f"{path}/{name}.csv", index=False)
 
 
-def get_daps_table(name: str, path: str) -> pd.DataFrame:
-    """Get DAPS table
-    Args:
-        name: table name
-        path: storage path
-    """
-    table = pd.read_csv(f"{path}/{name}.csv")
-    return table
+def get_names(con, table_name) -> Dict[str, str]:
+    """Fetch non-null `{id: name}` pairs from `table_name`."""
+
+    return (
+        pd.read_sql_table(table_name, con, columns=["id", "name"])
+        .set_index("id")
+        .name.dropna()
+        .to_dict()
+    )

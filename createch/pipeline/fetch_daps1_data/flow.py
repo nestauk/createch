@@ -11,25 +11,11 @@ within a metaflow.
 """
 import os
 import sys
-from typing import Dict
 
 from metaflow import conda, FlowSpec, Parameter, step
 
 
 ENV_VAR = "MYSQL_CONFIG"
-
-
-# TODO: refactor into `utils.daps1.py` when `getters.daps.py` is refactored
-def get_names(con, table_name) -> Dict[str, str]:
-    """Fetch non-null `{id: name}` pairs from `table_name`."""
-    from pandas import read_sql_table
-
-    return (
-        read_sql_table(table_name, con, columns=["id", "name"])
-        .set_index("id")
-        .name.dropna()
-        .to_dict()
-    )
 
 
 class CreatechNestaGetter(FlowSpec):
@@ -49,6 +35,7 @@ class CreatechNestaGetter(FlowSpec):
             "git+ssh://git@github.com/nestauk/data_getters.git"
         )
         from data_getters.core import get_engine
+        from daps1_utils import get_names
 
         if self.db_config_path is None:
             raise ValueError(
