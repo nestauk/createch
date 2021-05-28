@@ -5,7 +5,6 @@ from typing import Any, Iterator
 
 
 import pandas as pd
-from data_getters.core import get_engine
 
 # from pandas._typing import FilePathOrBuffer  # Not available in pandas < 1
 
@@ -24,6 +23,8 @@ def fetch_daps_table(table_name: str, fields: str = "all") -> pd.DataFrame:
     Returns:
         table
     """
+    from data_getters.core import get_engine
+
     logging.info(f"Fetching {table_name}")
     engine = get_engine(MYSQL_CONFIG)
     con = engine.connect().execution_options(stream_results=True)

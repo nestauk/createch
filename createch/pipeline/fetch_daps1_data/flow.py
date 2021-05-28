@@ -15,8 +15,6 @@ from typing import Dict
 
 from metaflow import conda, FlowSpec, Parameter, step
 
-from createch.getters.crunchbase import CB_PATH, fetch_save_crunchbase
-from createch.getters.gtr import GTR_PATH, fetch_save_gtr_tables
 
 ENV_VAR = "MYSQL_CONFIG"
 
@@ -64,7 +62,7 @@ class CreatechNestaGetter(FlowSpec):
         self.gtr_names = get_names(con, "gtr_organisations")
         self.crunchbase_names = get_names(con, "crunchbase_organizations")
 
-        self.next(self.end)
+        self.next(self.fetch_cb)
 
     @conda(python="3.7")
     @step
@@ -74,10 +72,14 @@ class CreatechNestaGetter(FlowSpec):
             f"{sys.executable} -m pip install --quiet "
             "git+ssh://git@github.com/nestauk/data_getters.git"
         )
+        from cb_utils import CB_PATH, fetch_save_crunchbase
 
         if os.path.exists(CB_PATH) is False:
             os.makedirs(CB_PATH)
+
         fetch_save_crunchbase()
+
+        self.next(self.fetch_gtr)
 
     @conda(python="3.7")
     @step
@@ -87,10 +89,14 @@ class CreatechNestaGetter(FlowSpec):
             f"{sys.executable} -m pip install --quiet "
             "git+ssh://git@github.com/nestauk/data_getters.git"
         )
+        from gtr_utils import GTR_PATH, fetch_save_gtr_tables
 
         if os.path.exists(GTR_PATH) is False:
             os.mkdir(GTR_PATH)
+
         fetch_save_gtr_tables()
+
+        self.next(self.end)
 
     @step
     def end(self):
