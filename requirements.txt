@@ -1,6 +1,6 @@
 numpy
 scipy
-pandas>1  # TODO: currently clashes with data_getters
+pandas>1
 matplotlib
 altair
 metaflow
