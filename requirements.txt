@@ -9,5 +9,5 @@ tqdm
 filelock
 typer
 sh
-gensim  # TODO: incompatible with data_getters
-spacy  # TODO: incompatible with data_getters
+gensim
+spacy
