@@ -1,24 +1,26 @@
 # Script to train topic model on creative industries projects
 import logging
-from numpy.random import seed
-import pandas as pd
 
-from createch import PROJECT_DIR, config
-from createch.getters.processing import save_model
+from numpy.random import seed
+
+from createch import PROJECT_DIR
 from createch.getters.gtr import (
-    get_link_table,
     get_cis_lookup,
     get_gtr_projects,
+    get_gtr_tokenised,
+    get_link_table,
     get_organisations,
 )
-from createch.pipeline.topic_modelling import train_model, post_process_model_clusters
+from createch.getters.processing import save_model
+from createch.pipeline.topic_modelling import post_process_model_clusters, train_model
 from createch.utils.io import save_lookup
 
 # Functions
 
 
-def make_creative_tokenised(projects, orgs, tokenised_descrs):
-    """Creates lookup between project ids and descriptions for creative industries projects"""
+def make_creative_tokenised(projects, orgs):
+    """Creates lookup between project ids and descriptions for
+    # creative industries projects"""
 
     logging.info("Merging tables")
     link_table = get_link_table().query("table_name == 'gtr_organisations'")
@@ -42,7 +44,7 @@ if __name__ == "__main__":
     projects = get_gtr_projects()
     ci_orgs = get_organisations()
 
-    ci_tokenised = make_creative_tokenised(projects, ci_orgs, descr_tokenised)
+    ci_tokenised = make_creative_tokenised(projects, ci_orgs)
 
     logging.info("Training topic model")
     gtr_topsbm = train_model(list(ci_tokenised.values()), list(ci_tokenised.keys()))
