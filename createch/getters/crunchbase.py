@@ -45,7 +45,7 @@ def get_crunchbase_orgs_cats_uk():
     )
 
 
-def get_crunchbase_org_cats_all():
+def get_crunchbase_orgs_cats_all():
 
     return fetch_daps_table("crunchbase_organizations_categories")
 

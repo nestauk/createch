@@ -63,6 +63,7 @@ if __name__ == "__main__":
     ci_tokenised = make_creative_tokenised(creative_comms, cats_to_comms_lookup)
 
     logging.info("Training topic model")
+    logging.info("Testing with few obs")
     cb_top_sbm = train_model(list(ci_tokenised.values()), list(ci_tokenised.keys()))
 
     topic_mix_df, clusters = post_process_model_clusters(
