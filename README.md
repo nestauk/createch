@@ -37,6 +37,10 @@ Run `python createch/pipeline/model_tokenise.py` to tokenise {source} descriptio
 
 Run `python createch/pipeline/semantic_identification.py` to expand technology vocabularies and tag relevant descriptions. The expanded vocabularies and id - area lookups are saved in `outputs/data/{source}`.
 
+Run `python createch/pipeline//make_research_topic_partition.py` to produce a research topic co-occurrence network that we can use to produce a dataset labelled with research disciplines
+
+Run `python createch/pipeline/discipline_classifier.py` to create a labelled dataset using the community partitions above and train a model that predicts disciplines based on project descriptions.
+
 ## Contributor guidelines
 
 [Technical and working style guidelines](https://github.com/nestauk/ds-cookiecutter/blob/master/GUIDELINES.md)
