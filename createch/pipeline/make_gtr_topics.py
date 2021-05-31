@@ -1,4 +1,4 @@
-# Imports
+# Script to train topic model on creative industries projects
 import logging
 from numpy.random import seed
 import pandas as pd
@@ -18,6 +18,7 @@ from createch.utils.io import save_lookup
 
 
 def make_creative_tokenised(projects, orgs, tokenised_descrs):
+    """Creates lookup between project ids and descriptions for creative industries projects"""
 
     logging.info("Merging tables")
     link_table = get_link_table().query("table_name == 'gtr_organisations'")
