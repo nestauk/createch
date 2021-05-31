@@ -1,5 +1,7 @@
-import os
+import json
 import logging
+import os
+
 
 import pandas as pd
 
@@ -10,6 +12,31 @@ CB_PATH = f"{PROJECT_DIR}/inputs/data/crunchbase"
 
 if os.path.exists(CB_PATH) is False:
     os.makedirs(CB_PATH)
+
+
+def get_crunchbase_orgs():
+    return pd.read_csv(f"{CB_PATH}/crunchbase_organisations.csv")
+
+
+def get_crunchbase_tokenised():
+    with open(
+        f"{PROJECT_DIR}/outputs/data/crunchbase/crunchbase_tokenised.json", "r"
+    ) as infile:
+        return json.load(infile)
+
+
+def get_crunchbase_tagged():
+    with open(
+        f"{PROJECT_DIR}/outputs/data/crunchbase/crunchbase_area_tagged.json", "r"
+    ) as infile:
+        return json.load(infile)
+
+
+def get_crunchbase_vocabulary():
+    with open(
+        f"{PROJECT_DIR}/outputs/data/crunchbase/crunchbase_vocabulary.json", "r"
+    ) as infile:
+        return json.load(infile)
 
 
 def filter_uk(table: pd.DataFrame, ids: set, var_name: str = "org_id"):

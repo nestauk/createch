@@ -1,6 +1,7 @@
 # Fetch GtR tables
 # TODO: Add organisations and funding tables
 
+import json
 import os
 
 import pandas as pd
@@ -19,6 +20,29 @@ PROJECT_FIELDS = [
     "techAbstractText",
 ]
 FUNDER_FIELDS = ["id", "start", "category", "amount"]
+
+
+def get_gtr_projects():
+    return pd.read_csv(f"{GTR_PATH}/gtr_projects.csv")
+
+
+def get_gtr_predicted_disciplines():
+    pd.read_csv(f"{PROJECT_DIR}/outputs/data/gtr/predicted_disciplines.csv")
+
+
+def get_gtr_tokenised():
+    with open(f"{PROJECT_DIR}/outputs/data/gtr/gtr_tokenised.json", "r") as infile:
+        return json.load(infile)
+
+
+def get_gtr_tagged():
+    with open(f"{PROJECT_DIR}/outputs/data/gtr/gtr_area_tagged.json", "r") as infile:
+        return json.load(infile)
+
+
+def get_gtr_vocabulary():
+    with open(f"{PROJECT_DIR}/outputs/data/gtr/gtr_vocabulary.json", "r") as infile:
+        return json.load(infile)
 
 
 def filter_projects(
@@ -45,10 +69,10 @@ def filter_projects(
 
 
 def fetch_save_gtr_tables():
-    projects = fetch_daps_table("gtr_projects", GTR_PATH, PROJECT_FIELDS)
-    funders = fetch_daps_table("gtr_funds", GTR_PATH)
-    topics = fetch_daps_table("gtr_topic", GTR_PATH)
-    link = fetch_daps_table("gtr_link_table", GTR_PATH)
+    projects = fetch_daps_table("gtr_projects", PROJECT_FIELDS)
+    funders = fetch_daps_table("gtr_funds")
+    topics = fetch_daps_table("gtr_topic")
+    link = fetch_daps_table("gtr_link_table")
 
     projects_filtered = filter_projects(projects, link, funders)
 
