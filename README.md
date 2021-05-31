@@ -27,6 +27,8 @@ Run `python createch/getters/gtr.py` to fetch:
 - `gtr_topics`
 - `gtr_link_table` for merging various gtr tables
 
+Key tables for analysis can be read using getter functions in `createch/getters/{source}`.
+
 We still need to create fetchers & queries for gtr organisation data and locations
 
 Run `python -m spacy download en_core_web_sm` to install the Spacy language model
