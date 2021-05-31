@@ -39,6 +39,17 @@ def get_crunchbase_vocabulary():
         return json.load(infile)
 
 
+def get_crunchbase_orgs_cats_uk():
+    return pd.read_csv(
+        f"{PROJECT_DIR}/inputs/data/crunchbase/crunchbase_organizations_categories.csv"
+    )
+
+
+def get_crunchbase_org_cats_all():
+
+    return fetch_daps_table("crunchbase_organizations_categories")
+
+
 def filter_uk(table: pd.DataFrame, ids: set, var_name: str = "org_id"):
     """Gets UK companies from crunchbase
     Args:
