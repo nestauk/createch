@@ -1,23 +1,23 @@
 # Build discipline labelled dataset and classify projects into disciplines
 
 import logging
+import pickle
 import warnings
 
+import numpy as np
 import pandas as pd
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import f1_score, make_scorer, precision_score
-from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.metrics import f1_score, make_scorer
+from sklearn.model_selection import GridSearchCV
 from sklearn.multiclass import OneVsRestClassifier
-from sklearn.preprocessing import MultiLabelBinarizer
 
 
 from createch import config, PROJECT_DIR
 from createch.pipeline.make_research_topic_partition import make_network_analysis_inputs
 from createch.utils.io import get_lookup
 
-# Fiter deprecation warnings for sklearn
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
@@ -43,12 +43,13 @@ def make_labelled_dataset(
         [discipline_names[c] for c in cat] for cat in categories_projects["categories"]
     ]
 
-    categories_projects_pure = categories_projects.loc[
-        [len(d) == 1 for d in categories_projects["discipline_list"]]
-    ].assign(single_discipline=lambda df: df["discipline_list"].apply(lambda x: x[0]))
+    categories_projects["top_disc"] = [
+        pd.Series(x).value_counts().idxmax()
+        for x in categories_projects["discipline_list"]
+    ]
 
-    project_discipline_lookup = categories_projects_pure.set_index("project_id")[
-        "single_discipline"
+    project_discipline_lookup = categories_projects.set_index("project_id")[
+        "top_disc"
     ].to_dict()
 
     # Label medical projects
@@ -75,19 +76,21 @@ def make_labelled_dataset(
     return project_labelled
 
 
-def make_tfidf(training_features):
+def make_doc_term_matrix(
+    training_features, transformer, max_features=50000, rescale=True
+):
 
     # Create and apply tfidf transformer
-    tfidf_vect = TfidfVectorizer(
-        ngram_range=[1, 2], stop_words="english", max_features=30000
+    vect = transformer(
+        ngram_range=[1, 2], stop_words="english", max_features=max_features
     )
-    tfids_fit = tfidf_vect.fit(training_features)
+    fit = vect.fit(training_features)
 
     # Create processed text
 
-    X_train_proc = tfids_fit.fit_transform(X_train)
+    X_proc = fit.transform(training_features)
 
-    return tfids_fit, X_train_proc
+    return fit, X_proc
 
 
 def grid_search(X, y, model, parametres, metric):
@@ -96,6 +99,22 @@ def grid_search(X, y, model, parametres, metric):
     clf = GridSearchCV(estimator, parametres, scoring=metric, cv=3)
     clf.fit(X, y)
     return clf
+
+
+def make_predicted_disc_df(projects, vectoriser, estimator, y_cols, min_length=300):
+
+    projects_descr = projects.dropna(axis=0, subset=["abstractText"])
+
+    projects_long = projects_descr.loc[
+        [len(desc) > 300 for desc in projects_descr["abstractText"]]
+    ]
+
+    pl_vect = vectoriser.transform(projects_long["abstractText"])
+
+    pred = estimator.predict_proba(pl_vect)
+
+    pred_df = pd.DataFrame(pred, index=projects_long["project_id"], columns=y_cols)
+    return pred_df
 
 
 if __name__ == "__main__":
@@ -114,9 +133,7 @@ if __name__ == "__main__":
     )
 
     logging.info("Creating labelled dataset")
-    project_labelled = make_labelled_dataset(
-        categories_projects, projects, comm_discipline_names
-    )
+    project_labelled = make_labelled_dataset(cat_coocc, projects, comm_discipline_names)
 
     # Classification and validation
     logging.info("Starting modelling")
@@ -124,25 +141,43 @@ if __name__ == "__main__":
         config["discipline_classification"]["model_parametres"]
     )
 
-    Y = MultiLabelBinarizer().fit_transform(project_labelled["single_discipline"])
-    X_train, X_test, y_train, y_test = train_test_split(
-        project_labelled["abstractText"], Y
+    Y = np.array(pd.get_dummies(project_labelled["single_discipline"]))
+    y_cols = sorted(set(project_labelled["single_discipline"]))
+
+    vect_fit, X_proc = make_doc_term_matrix(
+        project_labelled["abstractText"], CountVectorizer, max_features=20000
     )
 
-    tfids_fit, X_train_proc = make_tfidf(X_train)
-
     f1_multi = make_scorer(f1_score, average="weighted")
-    precision_multi = make_scorer(precision_score, average="micro")
 
     results = []
     models = [
         LogisticRegression(solver="liblinear"),
         RandomForestClassifier(),
-        GradientBoostingClassifier(),
+        #    GradientBoostingClassifier(),
     ]
-    names = ["logistic", "random_forest", "gradient_boost"]
+    names = ["logistic", "random_forest"]
+    # "gradient_boost"]
 
     for mod, pars, name in zip(models, model_parametres, names):
         logging.info(f"grid searching {name}")
-        clf = grid_search(X_train_proc, y_train, mod, pars, precision_multi)
+        clf = grid_search(X_proc, Y, mod, pars, f1_multi)
         results.append(clf)
+
+    scores = [r.best_score_ for r in results]
+    index_best = scores.index(max(scores))
+
+    logging.info(f"Best classifier is {names[index_best]}")
+
+    best_estimator = results[index_best].best_estimator_
+    logging.info(f"{best_estimator}")
+
+    # Predict for all projects with long text descriptions
+    pred_df = make_predicted_disc_df(projects, vect_fit, best_estimator, y_cols)
+
+    logging.info("Saving results")
+    pred_df.to_csv(f"{PROJECT_DIR}/outputs/data/gtr/predicted_disciplines.csv")
+    with open(
+        f"{PROJECT_DIR}/outputs/models/gtr_discipline_prediction.p", "wb"
+    ) as outfile:
+        pickle.dump(best_estimator, outfile)
