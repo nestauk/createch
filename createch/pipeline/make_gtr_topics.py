@@ -4,6 +4,7 @@ from numpy.random import seed
 import pandas as pd
 
 from createch import PROJECT_DIR, config
+from createch.getters.processing import save_model
 from createch.getters.gtr import (
     get_link_table,
     get_cis_lookup,
@@ -48,5 +49,8 @@ if __name__ == "__main__":
     topic_mix_df, clusters = post_process_model_clusters(
         gtr_topsbm, top_level=0, cl_level=1
     )
+    doc_to_cluster_lookup = {doc[0]: k for k, v in clusters.items() for doc in v}
 
+    save_model(gtr_topsbm, "outputs/models/gtr/gtr_topsbm_creative")
     topic_mix_df.to_csv(f"{PROJECT_DIR}/outputs/data/gtr/gtr_topic_mix.csv")
+    save_lookup(doc_to_cluster_lookup, "outputs/data/gtr/project_cluster_lookup")
