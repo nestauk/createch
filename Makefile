@@ -24,14 +24,9 @@ endef
 .PHONY: fetch-daps1
 ## Fetch GtR and crunchbase data from DAPS1
 fetch-daps1:
-	CONDA_CHANNELS=conda-forge MYSQL_CONFIG=$(MYSQL_CONFIG) python createch/pipeline/fetch_daps1_data/flow.py --no-pylint\
+	MYSQL_CONFIG=$(MYSQL_CONFIG) python createch/pipeline/fetch_daps1_data/flow.py --no-pylint\
 	 --environment=conda\
 	 run
-# 	@echo Hello I am running
-# 	python createch/pipeline/fetch_daps1_data/flow.py --no-pylint\
-# 	 --environment=conda\
-# 	 run\
-	 --db-config-path=${MYSQL_CONFIG}
 
 .PHONY: jacchammer
 ## Fuzzy matching pipelines (match GtR & Crunchbase to Companies House)

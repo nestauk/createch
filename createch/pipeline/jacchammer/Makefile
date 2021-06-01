@@ -7,8 +7,9 @@ test_mode = true
 
 # If `batch=true` define `batch_args`
 batch = false
+batch_mem = 32000
 ifeq ($(batch),true)
-batch_args = --with batch:queue=job-queue-nesta-metaflow-test,memory=32000,cpu=1
+batch_args := --with batch:queue=job-queue-nesta-metaflow-test,memory=$(batch_mem),cpu=1
 endif
 
 all: match-gtr match-crunchbase
@@ -32,7 +33,6 @@ match-crunchbase: $(BASE)/outputs/.cache/cb_names.json
 	 --clean_names true\
 	 --test_mode $(test_mode)\
 	 $(batch_args)
-	#  --run-id-file $(BASE)/createch/config/metaflow_run_ids/jacchammer/crunchbase\
 
 
 .PHONY: match-gtr
@@ -46,4 +46,3 @@ match-gtr: $(BASE)/outputs/.cache/gtr_names.json
 	 --clean_names true\
 	 --test_mode $(test_mode)\
 	 $(batch_args)
-	#  --run-id-file $(BASE)/createch/config/metaflow_run_ids/gtr\
