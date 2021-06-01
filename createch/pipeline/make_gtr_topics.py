@@ -15,8 +15,6 @@ from createch.getters.processing import save_model
 from createch.pipeline.topic_modelling import post_process_model_clusters, train_model
 from createch.utils.io import save_lookup
 
-# Functions
-
 
 def make_creative_tokenised(projects, orgs):
     """Creates lookup between project ids and descriptions for
@@ -27,8 +25,10 @@ def make_creative_tokenised(projects, orgs):
 
     project_org = projects.merge(
         link_table, left_on="project_id", right_on="project_id"
-    ).merge(orgs, on="id")
+    ).merge(orgs, left_on="id", right_on="gtr_id")
     ci_projects = set(project_org["project_id"])
+
+    logging.info(len(ci_projects))
 
     logging.info("Getting tokenised")
     ci_tokenised = {k: v for k, v in get_gtr_tokenised().items() if k in ci_projects}
