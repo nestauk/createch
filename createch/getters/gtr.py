@@ -23,7 +23,9 @@ FUNDER_FIELDS = ["id", "start", "category", "amount"]
 
 
 def get_gtr_projects():
-    return pd.read_csv(f"{GTR_PATH}/gtr_projects.csv")
+    df = pd.read_csv(f"{GTR_PATH}/gtr_projects.csv")
+    df["start"] = pd.to_datetime(df["start"])
+    return df
 
 
 def get_gtr_predicted_disciplines():

@@ -14,3 +14,7 @@ gensim
 spacy
 networkx
 cdlib
+altair
+altair-saver
+selenium
+webdriver-manager

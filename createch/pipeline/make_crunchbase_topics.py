@@ -12,8 +12,9 @@ from createch.getters.crunchbase import (
 )
 from createch.getters.processing import save_model
 from createch.pipeline.network_analysis import make_network_from_coocc
-from createch.pipeline.topic_modelling import post_process_model_clusters, train_model
-from createch.utils.io import save_lookup
+from createch.pipeline.topic_modelling import post_process_model, train_model
+
+# from createch.utils.io import save_lookup
 
 
 def make_creative_tokenised(creative_comms, name_comm_lookup):
@@ -32,13 +33,18 @@ def make_creative_tokenised(creative_comms, name_comm_lookup):
     return ci_tokenised
 
 
-def save_model_outputs(topsbm, topic_mix, clusters, source):
+def save_model_outputs(
+    topsbm,
+    topic_mix,
+    # clusters,
+    source,
+):
 
-    doc_to_cluster_lookup = {doc[0]: k for k, v in clusters.items() for doc in v}
+    # doc_to_cluster_lookup = {doc[0]: k for k, v in clusters.items() for doc in v}
 
     save_model(topsbm, f"outputs/models/{source}/{source}_topsbm_creative")
     topic_mix_df.to_csv(f"{PROJECT_DIR}/outputs/data/{source}/{source}_topic_mix.csv")
-    save_lookup(doc_to_cluster_lookup, f"outputs/data/{source}/project_cluster_lookup")
+    # save_lookup(doc_to_cluster_lookup, f"outputs/data/{source}/project_cluster_lookup")
 
 
 if __name__ == "__main__":
@@ -61,12 +67,15 @@ if __name__ == "__main__":
 
     logging.info("Labelling UK companies")
     ci_tokenised = make_creative_tokenised(creative_comms, cats_to_comms_lookup)
+    logging.info(len(ci_tokenised))
 
     logging.info("Training topic model")
     cb_top_sbm = train_model(list(ci_tokenised.values()), list(ci_tokenised.keys()))
 
-    topic_mix_df, clusters = post_process_model_clusters(
-        cb_top_sbm, top_level=0, cl_level=1
-    )
+    # topic_mix_df = post_process_model_clusters(
+    #     cb_top_sbm, top_level=0, cl_level=1
+    # )
+    topic_mix_df = post_process_model(cb_top_sbm, top_level=0)
+    logging.info(topic_mix_df.head())
 
-    save_model_outputs(cb_top_sbm, topic_mix_df, clusters, "crunchbase")
+    save_model_outputs(cb_top_sbm, topic_mix_df, "crunchbase")
