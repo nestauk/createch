@@ -11,6 +11,7 @@
   - Configure metaflow to use AWS
 - Run `git clone https://github.com/martingerlach/hSBM_Topicmodel.git` inside `createch` to clone the `top-SBM` repo.
 - Add `MYSQL_CONFIG=path/to/sql/config` to `.env`
+- `conda config --add channels conda-forge`
 
 ## Features
 

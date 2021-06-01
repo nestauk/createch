@@ -13,7 +13,7 @@ from createch.getters.gtr import get_name as get_gtr
 
 if __name__ == "__main__":
     cache_dir = Path(f"{PROJECT_DIR}/outputs/.cache")
-    cache_dir.mkdir(exist_ok=True)
+    cache_dir.mkdir(exist_ok=True, parents=True)
 
     with open(cache_dir / "company_names.json", "w") as f:
         json.dump(
