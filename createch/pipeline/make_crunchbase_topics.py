@@ -6,6 +6,7 @@ from cdlib import algorithms
 
 from createch import PROJECT_DIR
 from createch.getters.crunchbase import (
+    get_cb_ch_organisations,
     get_crunchbase_orgs_cats_all,
     get_crunchbase_orgs_cats_uk,
     get_crunchbase_tokenised,
@@ -17,8 +18,8 @@ from createch.pipeline.topic_modelling import post_process_model, train_model
 # from createch.utils.io import save_lookup
 
 
-def make_creative_tokenised(creative_comms, name_comm_lookup):
-    """ """
+def make_creative_cat_tokenised(creative_comms, name_comm_lookup):
+    """Get lookup of org - tokens for orgs in creative categories"""
     uk_org_cats = get_crunchbase_orgs_cats_uk().assign(
         comm_label=lambda df: df["category_name"].map(name_comm_lookup)
     )
@@ -30,6 +31,17 @@ def make_creative_tokenised(creative_comms, name_comm_lookup):
     ci_tokenised = {
         k: v for k, v in get_crunchbase_tokenised().items() if k in uk_org_cats_id
     }
+    return ci_tokenised
+
+
+def make_creative_org_tokenised():
+    """Lookup of orgs - tokens for orgs in creative sectors"""
+
+    cb_ch_creative_ids = set(get_cb_ch_organisations()["cb_id"])
+    ci_tokenised = {
+        k: v for k, v in get_crunchbase_tokenised().items() if k in cb_ch_creative_ids
+    }
+
     return ci_tokenised
 
 
@@ -66,11 +78,16 @@ if __name__ == "__main__":
     }
 
     logging.info("Labelling UK companies")
-    ci_tokenised = make_creative_tokenised(creative_comms, cats_to_comms_lookup)
-    logging.info(len(ci_tokenised))
+    ci_tokenised = make_creative_cat_tokenised(creative_comms, cats_to_comms_lookup)
+    creative_org_tokenised = make_creative_org_tokenised()
+    ci_tokenised_combined = {**ci_tokenised, **creative_org_tokenised}
+
+    logging.info(len(ci_tokenised_combined))
 
     logging.info("Training topic model")
-    cb_top_sbm = train_model(list(ci_tokenised.values()), list(ci_tokenised.keys()))
+    cb_top_sbm = train_model(
+        list(ci_tokenised_combined.values()), list(ci_tokenised_combined.keys())
+    )
 
     # topic_mix_df = post_process_model_clusters(
     #     cb_top_sbm, top_level=0, cl_level=1
