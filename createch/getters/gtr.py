@@ -2,6 +2,7 @@
 # TODO: Add organisations and funding tables
 
 import json
+import logging
 import os
 
 import pandas as pd
@@ -69,15 +70,23 @@ def get_organisations():
     FILTER_TERMS = config["gtr_organisations"]["filter_terms"]
 
     orgs = pd.read_csv(
-        "~/Desktop/projects/im-minerva/data/processed/gtr/projects_organisations.csv",
+        f"{PROJECT_DIR}/inputs/data/gtr/gtr_ch_organisations.csv",
         dtype={"SIC4_code": str},
     )
 
-    orgs = orgs[["id", "name", "company_number", "score", "SIC4_code"]].drop_duplicates(
-        "id"
-    )
+    orgs = orgs[
+        [
+            "gtr_id",
+            "gtr_name",
+            "company_number",
+            "ch_name",
+            "SIC4_code",
+            "ttwa_code",
+            "ttwa_name",
+        ]
+    ].drop_duplicates("gtr_id")
     orgs["flag"] = [
-        any(x in name.lower() for x in FILTER_TERMS) for name in orgs["name"]
+        any(x in name.lower() for x in FILTER_TERMS) for name in orgs["gtr_name"]
     ]
 
     orgs = (
@@ -86,7 +95,44 @@ def get_organisations():
         .dropna(axis=0, subset=["creative_sector"])
         .reset_index(drop=True)
     )
-    return orgs
+
+    logging.info("Expanding gtr organisations")
+    orgs_final = expand_gtr_orgs(orgs)
+
+    return orgs_final
+
+
+def expand_gtr_orgs(orgs):
+    """Expands GTR organisations with other potentially relevant ones"""
+    gtr_addresses = fetch_daps_table("gtr_organisations_locations")
+    uk_orgs = set(
+        gtr_addresses.loc[gtr_addresses["country_name"] == "United Kingdom"]["id"]
+    )
+
+    gtr_orgs = fetch_daps_table("gtr_organisations")
+    gtr_orgs_uk = gtr_orgs.loc[gtr_orgs["id"].isin(uk_orgs)].reset_index(drop=True)
+
+    relevant = ["museum", "library", "gallery", "broadcasting", "bbc"]
+
+    gtr_orgs_rel = gtr_orgs_uk.loc[
+        [any(r in name.lower() for r in relevant) for name in gtr_orgs_uk["name"]]
+    ]
+    gtr_orgs_rel = gtr_orgs_rel.loc[~gtr_orgs_rel["id"].isin(orgs["gtr_id"])]
+
+    gtr_orgs_rel["creative_sector"] = [
+        "Museums galleries and libraries"
+        if any(m in name.lower() for m in ["museum", "library", "gallery"])
+        else "Film TV video radio and photography"
+        for name in gtr_orgs_rel["name"]
+    ]
+
+    gtr_orgs_rel = gtr_orgs_rel.rename(
+        columns={"id": "gtr_id", "name": "gtr_name"}
+    ).drop(axis=1, labels=["addresses"])
+
+    orgs_final = pd.concat([orgs, gtr_orgs_rel])
+
+    return orgs_final
 
 
 def filter_projects(
