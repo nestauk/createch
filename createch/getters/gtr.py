@@ -102,6 +102,12 @@ def get_organisations():
     return orgs_final
 
 
+def get_project_orgs_lookup():
+    link = get_link_table().query("table_name=='gtr_organisations'")
+
+    return link.drop_duplicates("id")[["id", "project_id"]]
+
+
 def expand_gtr_orgs(orgs):
     """Expands GTR organisations with other potentially relevant ones"""
     gtr_addresses = fetch_daps_table("gtr_organisations_locations")

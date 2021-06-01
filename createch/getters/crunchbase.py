@@ -7,6 +7,7 @@ import pandas as pd
 
 from createch import PROJECT_DIR
 from createch.getters.daps import fetch_daps_table, save_daps_table
+from createch.getters.gtr import get_cis_lookup
 
 CB_PATH = f"{PROJECT_DIR}/inputs/data/crunchbase"
 
@@ -48,6 +49,37 @@ def get_crunchbase_orgs_cats_uk():
 def get_crunchbase_orgs_cats_all():
 
     return fetch_daps_table("crunchbase_organizations_categories")
+
+
+def get_cb_ch_organisations():
+
+    SIC_IND_LOOKUP = get_cis_lookup()
+
+    uk_orgs = set(get_crunchbase_orgs()["id"])
+
+    cb_ch = pd.read_csv(
+        f"{PROJECT_DIR}/inputs/data/crunchbase/crunchbase_ch_organisations.csv",
+        dtype={"SIC4_code": str},
+    )
+
+    cb_ch = (
+        cb_ch.loc[cb_ch["cb_id"].isin(uk_orgs)][
+            [
+                "cb_id",
+                "cb_name",
+                "company_number",
+                "ch_name",
+                "SIC4_code",
+                "ttwa_code",
+                "ttwa_name",
+            ]
+        ]
+        .drop_duplicates(subset=["cb_id"])
+        .assign(creative_sector=lambda df: df["SIC4_code"].map(SIC_IND_LOOKUP))
+        .dropna(axis=0, subset=["creative_sector"])
+        .reset_index(drop=True)
+    )
+    return cb_ch
 
 
 def filter_uk(table: pd.DataFrame, ids: set, var_name: str = "org_id"):
