@@ -1,9 +1,13 @@
 # Generic scripts to get DAPS tables
 
 import logging
+from typing import Any, Iterator
+
 
 import pandas as pd
 from data_getters.core import get_engine
+
+# from pandas._typing import FilePathOrBuffer  # Not available in pandas < 1
 
 from createch import PROJECT_DIR
 
@@ -21,13 +25,44 @@ def fetch_daps_table(table_name: str, fields: str = "all") -> pd.DataFrame:
         table
     """
     logging.info(f"Fetching {table_name}")
-    con = get_engine(MYSQL_CONFIG)
+    engine = get_engine(MYSQL_CONFIG)
+    con = engine.connect().execution_options(stream_results=True)
 
     if fields == "all":
         chunks = pd.read_sql_table(table_name, con, chunksize=1000)
     else:
         chunks = pd.read_sql_table(table_name, con, columns=fields, chunksize=1000)
-    return pd.concat(chunks)
+
+    return chunks
+
+
+def stream_df_to_csv(
+    df_iterator: Iterator[pd.DataFrame],
+    path_or_buf: Any,  # FilePathOrBuffer
+    **kwargs,
+):
+    """Stream a DataFrame iterator to csv.
+
+    Args:
+        df_iterator: DataFrame chunks to stream to CSV
+        path_or_buf: FilePath or Buffer (passed to `DataFrame.to_csv`)
+        kwargs: Extra args passed to `DataFrame.to_csv`. Cannot contain
+            any of `{"mode", "header", "path_or_buf"}` - `mode` is "a" and
+            `header` is `False` for all but initial chunks.
+
+
+    Raises:
+        ValueError if `kwargs` contains disallowed values.
+    """
+    if any((key in kwargs for key in ["mode", "header", "path_or_buf"])):
+        raise ValueError()
+
+    # First chunk: mode "w" and write column names
+    initial = next(df_iterator)
+    initial.to_csv(path_or_buf, **kwargs)
+    # Subsequent chunks:
+    for chunk in df_iterator:
+        chunk.to_csv(path_or_buf, mode="a", header=False, **kwargs)
 
 
 def save_daps_table(table: pd.DataFrame, name: str, path: str):
