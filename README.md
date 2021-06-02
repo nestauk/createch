@@ -10,30 +10,38 @@
   - Configure pre-commit
   - Configure metaflow to use AWS
 - Run `git clone https://github.com/martingerlach/hSBM_Topicmodel.git` inside `createch` to clone the `top-SBM` repo.
+- Add `MYSQL_CONFIG=path/to/sql/config` to `.env`
 
 ## Features
 
-Run `python createch/getters/crunchbase.py` to fetch and save relevant CrunchBase tables including:
+### Extra dependencies
 
-- `crunchbase_organizations`: CrunchBase organisations in the UK
-- `crunchbase_funding_rounds`: CrunchBase funding rounds in the UK
-- `crunchbase_organizations_categories`: lookup between CrunchBase organisations in the UK and their categories
-- `crunchbase_category_groups`: Lookup between crunchbase categories and higher level categories.
+Run `python -m spacy download en_core_web_sm` to install the Spacy language model
 
-Run `python createch/getters/gtr.py` to fetch:
+### Fetch data
 
-- `gtr_projects`
-- `gtr_funders` (which we use to get project start dates)
-- `gtr_topics`
-- `gtr_link_table` for merging various gtr tables
+Run `make fetch-daps1` to Fetch GtR and CB data from `nesta/nestauk` (DAPS1), including:
+
+- Crunchbase:
+  - `crunchbase_organizations`: CrunchBase organisations in the UK
+  - `crunchbase_funding_rounds`: CrunchBase funding rounds in the UK
+  - `crunchbase_organizations_categories`: lookup between CrunchBase organisations in the UK and their categories
+  - `crunchbase_category_groups`: Lookup between crunchbase categories and higher level categories.
+- GtR:
+  - `gtr_projects`
+  - `gtr_funders` (which we use to get project start dates)
+  - `gtr_topics`
+  - `gtr_link_table` for merging various gtr tables
 
 Key tables for analysis can be read using getter functions in `createch/getters/{source}`.
 
 We still need to create fetchers & queries for gtr organisation data and locations
 
-Run `python -m spacy download en_core_web_sm` to install the Spacy language model
+### Tokenise and Word2Vec source descriptions
 
 Run `python createch/pipeline/model_tokenise.py` to tokenise {source} descriptions and train a word2vec model. The respective json files and models are saved in `outputs/{output_type}/{source}`
+
+### Semantic identification
 
 Run `python createch/pipeline/semantic_identification.py` to expand technology vocabularies and tag relevant descriptions. The expanded vocabularies and id - area lookups are saved in `outputs/data/{source}`.
 

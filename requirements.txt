@@ -9,7 +9,6 @@ tqdm
 filelock
 typer
 sh
-git+ssh://git@github.com/nestauk/data_getters.git
 gensim
 spacy
 networkx
