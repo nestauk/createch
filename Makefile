@@ -20,7 +20,6 @@ define execute_in_env
 	source bin/conda_activate.sh && conda_activate && $1
 endef
 
-
 .PHONY: fetch-daps1
 ## Fetch GtR and crunchbase data from DAPS1
 fetch-daps1:
