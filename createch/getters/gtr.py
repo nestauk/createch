@@ -102,6 +102,16 @@ def get_organisations():
     return orgs_final
 
 
+def get_gtr_topics():
+    return pd.read_csv(f"{PROJECT_DIR}/outputs/data/gtr/gtr_topic_mix.csv", index_col=0)
+
+
+def get_gtr_disciplines():
+    return pd.read_csv(
+        f"{PROJECT_DIR}/outputs/data/gtr/predicted_disciplines.csv", index_col=0
+    )
+
+
 def get_project_orgs_lookup():
     link = get_link_table().query("table_name=='gtr_organisations'")
 
