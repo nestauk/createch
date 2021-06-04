@@ -51,6 +51,12 @@ def get_crunchbase_orgs_cats_all():
     return fetch_daps_table("crunchbase_organizations_categories")
 
 
+def get_crunchbase_topics():
+    return pd.read_csv(
+        f"{PROJECT_DIR}/outputs/data/crunchbase/crunchbase_topic_mix.csv", index_col=0
+    )
+
+
 def get_cb_ch_organisations():
 
     SIC_IND_LOOKUP = get_cis_lookup()
