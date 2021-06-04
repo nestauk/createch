@@ -95,7 +95,7 @@ def count_vocab_matches(token_descr: list, expanded_voc: dict) -> dict:
     return matches
 
 
-def make_semantic_labels(source):
+def make_semantic_labels(source, thres):
     """ """
     logging.info("Getting data")
     tokenised = get_tokenised(f"{source}_tokenised")
@@ -107,7 +107,9 @@ def make_semantic_labels(source):
         k: list(
             set(v).union(
                 set(
-                    flatten([make_expansions(w, w2v, STOP_TERMS, thres=0.8) for w in v])
+                    flatten(
+                        [make_expansions(w, w2v, STOP_TERMS, thres=thres) for w in v]
+                    )
                 )
             )
         )
@@ -124,6 +126,7 @@ def make_semantic_labels(source):
 
 
 if __name__ == "__main__":
-    for source in ["gtr", "crunchbase"]:
+    thres = [0.8, 0.9]
+    for n, source in enumerate(["gtr", "crunchbase"]):
         logging.info(source)
-        make_semantic_labels(source)
+        make_semantic_labels(source, thres=thres[n])
