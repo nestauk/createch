@@ -64,7 +64,7 @@ def get_link_table():
     return pd.read_csv(f"{PROJECT_DIR}/inputs/data/gtr/gtr_link_table.csv")
 
 
-def get_organisations():
+def get_organisations(creative=True):
 
     SIC_IND_LOOKUP = get_cis_lookup()
     FILTER_TERMS = config["gtr_organisations"]["filter_terms"]
@@ -83,18 +83,25 @@ def get_organisations():
             "SIC4_code",
             "ttwa_code",
             "ttwa_name",
+            "sim_mean",
         ]
     ].drop_duplicates("gtr_id")
     orgs["flag"] = [
         any(x in name.lower() for x in FILTER_TERMS) for name in orgs["gtr_name"]
     ]
 
-    orgs = (
-        orgs.query("flag==False")
-        .assign(creative_sector=lambda df: df["SIC4_code"].map(SIC_IND_LOOKUP))
-        .dropna(axis=0, subset=["creative_sector"])
-        .reset_index(drop=True)
+    orgs = orgs.query("flag==False").assign(
+        creative_sector=lambda df: df["SIC4_code"].map(SIC_IND_LOOKUP)
     )
+
+    if creative is True:
+        orgs = orgs.dropna(axis=0, subset=["creative_sector"]).reset_index(drop=True)
+    else:
+        orgs = (
+            orgs.query("flag==False")
+            .assign(creative_sector=lambda df: df["SIC4_code"].map(SIC_IND_LOOKUP))
+            .fillna(value={"creative_sector": "other"})
+        )
 
     logging.info("Expanding gtr organisations")
     orgs_final = expand_gtr_orgs(orgs)
