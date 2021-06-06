@@ -56,7 +56,7 @@ def make_predicted_label_df(
     projects_descr = projects.dropna(axis=0, subset=[text_var])
 
     projects_long = projects_descr.loc[
-        [len(desc) > 300 for desc in projects_descr[text_var]]
+        [len(desc) > min_length for desc in projects_descr[text_var]]
     ]
 
     pl_vect = vectoriser.transform(projects_long[text_var])
