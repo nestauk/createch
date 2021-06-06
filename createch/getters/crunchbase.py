@@ -57,7 +57,13 @@ def get_crunchbase_topics():
     )
 
 
-def get_cb_ch_organisations():
+def get_crunchbase_industry_pred():
+    return pd.read_csv(
+        f"{PROJECT_DIR}/outputs/data/crunchbase/predicted_industries.csv"
+    )
+
+
+def get_cb_ch_organisations(creative=True):
 
     SIC_IND_LOOKUP = get_cis_lookup()
 
@@ -72,6 +78,7 @@ def get_cb_ch_organisations():
         cb_ch.loc[cb_ch["cb_id"].isin(uk_orgs)][
             [
                 "cb_id",
+                "sim_mean",
                 "cb_name",
                 "company_number",
                 "ch_name",
@@ -82,9 +89,14 @@ def get_cb_ch_organisations():
         ]
         .drop_duplicates(subset=["cb_id"])
         .assign(creative_sector=lambda df: df["SIC4_code"].map(SIC_IND_LOOKUP))
-        .dropna(axis=0, subset=["creative_sector"])
-        .reset_index(drop=True)
     )
+
+    if creative is True:
+        cb_ch = cb_ch.dropna(axis=0, subset=["creative_sector"]).reset_index(drop=True)
+
+    else:
+        cb_ch = cb_ch.fillna(value={"creative_sector": "other"})
+
     return cb_ch
 
 
