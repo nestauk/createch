@@ -32,7 +32,7 @@ def make_labelled_dataset(orgs_ch, cb_orgs):
     orgs_ch = get_cb_ch_organisations(creative=True)
 
     orgs_ch["combined_description"] = orgs_ch["cb_id"].map(
-        make_org_description_lu(orgs_ch)
+        make_org_description_lu(cb_orgs)
     )
 
     orgs_ch = orgs_ch.dropna(axis=0, subset=["combined_description"])
