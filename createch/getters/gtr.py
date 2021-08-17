@@ -97,11 +97,7 @@ def get_organisations(creative=True):
     if creative is True:
         orgs = orgs.dropna(axis=0, subset=["creative_sector"]).reset_index(drop=True)
     else:
-        orgs = (
-            orgs.query("flag==False")
-            .assign(creative_sector=lambda df: df["SIC4_code"].map(SIC_IND_LOOKUP))
-            .fillna(value={"creative_sector": "other"})
-        )
+        orgs = orgs.query("flag==False").fillna(value={"creative_sector": "Other"})
 
     logging.info("Expanding gtr organisations")
     orgs_final = expand_gtr_orgs(orgs)
@@ -122,7 +118,20 @@ def get_gtr_disciplines():
 def get_project_orgs_lookup():
     link = get_link_table().query("table_name=='gtr_organisations'")
 
-    return link.drop_duplicates("id")[["id", "project_id"]]
+    return link[["id", "project_id"]]
+
+
+def get_gtr_createch_tagged():
+    return pd.read_csv(
+        f"{PROJECT_DIR}/outputs/data/gtr_createch_tagged.csv", index_col=0
+    )
+
+
+def get_gtr_orgs_tagged():
+    return pd.read_csv(
+        f"{PROJECT_DIR}/outputs/data/gtr/gtr_createch_orgs.csv",
+        dtype={"SIC4_code": str},
+    )
 
 
 def expand_gtr_orgs(orgs):
@@ -136,6 +145,7 @@ def expand_gtr_orgs(orgs):
     gtr_orgs_uk = gtr_orgs.loc[gtr_orgs["id"].isin(uk_orgs)].reset_index(drop=True)
 
     relevant = ["museum", "library", "gallery", "broadcasting", "bbc"]
+    museum = ["museum", "library", "gallery"]
 
     gtr_orgs_rel = gtr_orgs_uk.loc[
         [any(r in name.lower() for r in relevant) for name in gtr_orgs_uk["name"]]
@@ -153,7 +163,14 @@ def expand_gtr_orgs(orgs):
         columns={"id": "gtr_id", "name": "gtr_name"}
     ).drop(axis=1, labels=["addresses"])
 
+    # Reassign any musesums to the museum sector
     orgs_final = pd.concat([orgs, gtr_orgs_rel])
+    orgs_final["creative_sector"] = [
+        "Museums galleries and libraries"
+        if any(r in row["gtr_name"].lower() for r in museum)
+        else row["creative_sector"]
+        for _, row in orgs_final.iterrows()
+    ]
 
     return orgs_final
 

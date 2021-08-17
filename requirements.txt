@@ -18,3 +18,5 @@ altair
 altair-saver
 selenium
 webdriver-manager
+xlrd
+tabulate

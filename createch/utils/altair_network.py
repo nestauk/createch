@@ -10,6 +10,7 @@ def node_layer(
     node_label_lookup,
     node_label,
     node_size,
+    node_shape,
     node_color,
     node_opacity,
     show_neighbours,
@@ -47,7 +48,15 @@ def node_layer(
                 title=kwargs["node_color_title"],
                 legend=alt.Legend(columns=2),
                 scale=alt.Scale(scheme="tableau20"),
-                sort="descending",
+                sort="ascending",
+            )
+        )
+    if node_shape in node_df.columns:
+        node_chart = node_chart.encode(
+            shape=alt.Shape(
+                node_shape,
+                scale=alt.Scale(range=["circle", "square", "triangle"]),
+                title=kwargs["node_shape_title"],
             )
         )
 
@@ -131,6 +140,7 @@ def plot_altair_network(
     node_size=None,
     node_color=None,
     node_opacity=None,
+    node_shape=None,
     show_neighbours=True,
     edge_scale=1,
     edge_opacity=0.1,
@@ -163,6 +173,7 @@ def plot_altair_network(
         node_label_lookup,
         node_label,
         node_size,
+        node_shape,
         node_color,
         node_opacity,
         show_neighbours,
