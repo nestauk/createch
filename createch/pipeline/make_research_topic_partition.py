@@ -37,7 +37,7 @@ def make_network_analysis_inputs() -> list:
     return gtr_projects, categories_projects
 
 
-def make_gt_network(network_x: nx.Graph) -> list:
+def make_gt_network(net: nx.Graph) -> list:
     """Converts co-occurrence network to graph-tool netwotk"""
     nodes = {name: n for n, name in enumerate(net.nodes())}
     index_to_name = {v: k for k, v in nodes.items()}
@@ -59,12 +59,12 @@ def make_gt_network(network_x: nx.Graph) -> list:
     return g_net, index_to_name
 
 
-def get_community_names(partition, index_to_name):
+def get_community_names(partition, index_to_name, level=1):
     """Create node - community lookup"""
 
     b = partition.get_bs()
 
-    b_lookup = {n: b[1][n] for n in sorted(set(b[0]))}
+    b_lookup = {n: b[level][n] for n in sorted(set(b[0]))}
 
     names = {index_to_name[n]: int(b_lookup[c]) for n, c in enumerate(b[0])}
 

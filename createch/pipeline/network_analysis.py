@@ -4,6 +4,19 @@ import networkx as nx
 import pandas as pd
 
 
+def make_topic_coocc(topic_mix, thres):
+
+    co_occ = (
+        topic_mix.reset_index(drop=False)
+        .melt(id_vars="index")
+        .query(f"value>{thres}")
+        .reset_index(drop=False)
+        .groupby("index")["variable"]
+        .apply(lambda x: list(x))
+    )
+    return co_occ
+
+
 def make_network_from_coocc(
     co_occ: list, thres: float = 0.1, extra_links: int = 200, spanning: bool = True
 ) -> nx.Graph:

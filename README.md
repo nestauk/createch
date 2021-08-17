@@ -50,6 +50,8 @@ Run `python createch/pipeline//make_research_topic_partition.py` to produce a re
 
 Run `python createch/pipeline/discipline_classifier.py` to create a labelled dataset using the community partitions above and train a model that predicts disciplines based on project descriptions.
 
+Run `python createch/pipeline/industry_classifier.py` to predict creative industry sectors for all crunchbase companies identified as potentially creative based on a training set of crunchbaase - companies house matched companies.
+
 ### Matching to Companies House
 
 Fuzzy-matching of GtR and Crunchbase to Companies House.
