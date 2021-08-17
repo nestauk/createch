@@ -6,7 +6,7 @@ from typing import Dict, Iterator
 
 import pandas as pd
 
-from daps1_utils import (
+from createch.pipeline.fetch_daps1_data.daps1_utils import (
     get_engine,
     fetch_daps_table,
     MYSQL_CONFIG,

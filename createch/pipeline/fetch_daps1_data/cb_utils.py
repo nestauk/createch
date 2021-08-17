@@ -4,7 +4,10 @@ from typing import Dict
 
 import pandas as pd
 
-from daps1_utils import fetch_daps_table, save_daps_table
+from createch.pipeline.fetch_daps1_data.daps1_utils import (
+    fetch_daps_table,
+    save_daps_table,
+)
 
 logger = logging.getLogger(__name__)
 

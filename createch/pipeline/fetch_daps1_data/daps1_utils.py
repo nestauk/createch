@@ -7,8 +7,11 @@ from typing import Any, Dict, Iterator
 import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import URL
+from dotenv import find_dotenv, load_dotenv
 
 # from pandas._typing import FilePathOrBuffer  # Not available in pandas < 1
+
+load_dotenv(find_dotenv())
 
 MYSQL_CONFIG = os.environ["MYSQL_CONFIG"]
 

@@ -20,3 +20,7 @@ webdriver-manager
 xlrd
 tabulate
 jupyterlab
+sqlalchemy
+altair-saver
+webdriver-manager
+cdlib
