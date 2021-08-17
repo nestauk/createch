@@ -19,3 +19,4 @@ selenium
 webdriver-manager
 xlrd
 tabulate
+jupyterlab
