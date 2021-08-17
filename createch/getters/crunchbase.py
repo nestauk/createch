@@ -1,18 +1,21 @@
 import json
 import logging
-import os
-
+from functools import lru_cache
+from typing import Dict
 
 import pandas as pd
+from metaflow import namespace, Run
 
+import createch
 from createch import PROJECT_DIR
 from createch.getters.daps import fetch_daps_table, save_daps_table
 from createch.getters.gtr import get_cis_lookup
+from createch.pipeline.fetch_daps1_data.cb_utils import CB_PATH
 
-CB_PATH = f"{PROJECT_DIR}/inputs/data/crunchbase"
+logger = logging.getLogger(__name__)
+namespace(None)
 
-if os.path.exists(CB_PATH) is False:
-    os.makedirs(CB_PATH)
+RUN_ID: int = createch.config["flows"]["nesta"]["run_id"]
 
 
 def get_crunchbase_orgs():
@@ -38,7 +41,6 @@ def get_crunchbase_vocabulary():
         f"{PROJECT_DIR}/outputs/data/crunchbase/crunchbase_vocabulary.json", "r"
     ) as infile:
         return json.load(infile)
-
 
 def get_crunchbase_orgs_cats_uk():
     return pd.read_csv(
@@ -135,7 +137,12 @@ def fetch_save_crunchbase():
     save_daps_table(cb_funding_rounds_uk, "crunchbase_funding_rounds", CB_PATH)
     save_daps_table(cb_org_cats_uk, "crunchbase_organizations_categories", CB_PATH)
     save_daps_table(category_group, "crunchbase_category_groups", CB_PATH)
+    
+@lru_cache()
+def _flow(run_id: int) -> Run:
+    return Run(f"CreatechNestaGetter/{run_id}")
 
 
-if __name__ == "__main__":
-    fetch_save_crunchbase()
+def get_name() -> Dict[str, str]:
+    """Lookup between Crunchbase organisation ID and name."""
+    return _flow(RUN_ID).data.crunchbase_names
