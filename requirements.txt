@@ -23,4 +23,6 @@ jupyterlab
 sqlalchemy
 altair-saver
 webdriver-manager
-cdlib
+geopandas
+pymysql
+rtree

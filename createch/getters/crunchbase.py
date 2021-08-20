@@ -1,8 +1,11 @@
 import json
 import logging
+import os
 from functools import lru_cache
 from typing import Dict
 
+import geopandas as gp
+from numpy import index_exp
 import pandas as pd
 from metaflow import namespace, Run
 
@@ -41,6 +44,7 @@ def get_crunchbase_vocabulary():
         f"{PROJECT_DIR}/outputs/data/crunchbase/crunchbase_vocabulary.json", "r"
     ) as infile:
         return json.load(infile)
+
 
 def get_crunchbase_orgs_cats_uk():
     return pd.read_csv(
@@ -137,7 +141,8 @@ def fetch_save_crunchbase():
     save_daps_table(cb_funding_rounds_uk, "crunchbase_funding_rounds", CB_PATH)
     save_daps_table(cb_org_cats_uk, "crunchbase_organizations_categories", CB_PATH)
     save_daps_table(category_group, "crunchbase_category_groups", CB_PATH)
-    
+
+
 @lru_cache()
 def _flow(run_id: int) -> Run:
     return Run(f"CreatechNestaGetter/{run_id}")
@@ -146,3 +151,49 @@ def _flow(run_id: int) -> Run:
 def get_name() -> Dict[str, str]:
     """Lookup between Crunchbase organisation ID and name."""
     return _flow(RUN_ID).data.crunchbase_names
+
+
+def make_cb_ttwa():
+    """Makes the CB - TTWA lookup"""
+    geo_cb = fetch_daps_table("geographic_data")
+    orgs = get_crunchbase_orgs().drop_duplicates("id").reset_index(drop=True)
+
+    orgs_geo_coords = orgs[["id", "name", "city", "location_id"]].merge(
+        geo_cb[["id", "latitude", "longitude"]],
+        left_on="location_id",
+        right_on="id",
+    )
+
+    ttwa_boundaries = gp.read_file(
+        f"{PROJECT_DIR}/inputs/data/ttwa_shapefile/Travel_to_Work_Areas__December_2011__Super_Generalised_Clipped_Boundaries_in_United_Kingdom.shp"
+    )
+    ttwa_boundaries = ttwa_boundaries.to_crs(epsg=4326)
+
+    orgs_geo_p = gp.GeoDataFrame(
+        orgs_geo_coords,
+        geometry=gp.points_from_xy(orgs_geo_coords.longitude, orgs_geo_coords.latitude),
+    )
+    orgs_geo_p = orgs_geo_p.set_crs(epsg=4326)
+
+    orgs_ttwa = gp.sjoin(orgs_geo_p, ttwa_boundaries, op="within")[
+        ["id_x", "name", "city", "ttwa11cd", "ttwa11nm"]
+    ].rename(columns={"id_x": "id"})
+
+    return orgs_ttwa
+
+
+def get_cb_ttwa(overwrite=False):
+    """Reads a CB_TTWA lookup"""
+
+    cb_ttwa_path = f"{PROJECT_DIR}/inputs/data/cb_ttwa_lookup.csv"
+    if os.path.exists(cb_ttwa_path) is False:
+        logging.info("Creating cb - ttwa lookup")
+        make_cb_ttwa().to_csv(cb_ttwa_path, index=False)
+        return pd.read_csv(cb_ttwa_path)
+
+    else:
+        if overwrite is True:
+            make_cb_ttwa().to_csv(cb_ttwa_path, index=False)
+            return pd.read_csv(cb_ttwa_path)
+        else:
+            return pd.read_csv(cb_ttwa_path)

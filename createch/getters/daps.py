@@ -1,4 +1,31 @@
+import logging
+import os
+from configparser import ConfigParser
+
 import pandas as pd
+from dotenv import find_dotenv, load_dotenv
+from sqlalchemy import create_engine
+from sqlalchemy.engine.url import URL
+
+
+load_dotenv(find_dotenv())
+
+MYSQL_CONFIG = os.getenv("MYSQL_CONFIG")
+
+
+def get_engine(config_path, database="production", **engine_kwargs):
+    """Get a SQL alchemy engine from config"""
+    cp = ConfigParser()
+    cp.read(config_path)
+    cp = cp["client"]
+    url = URL(
+        drivername="mysql+pymysql",
+        database=database,
+        username=cp["user"],
+        host=cp["host"],
+        password=cp["password"],
+    )
+    return create_engine(url, **engine_kwargs)
 
 
 def get_daps_table(name: str, path: str) -> pd.DataFrame:
