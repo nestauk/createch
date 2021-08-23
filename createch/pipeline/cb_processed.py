@@ -188,4 +188,8 @@ if __name__ == "__main__":
         for x in org_labels_expanded_df["founded_on"]
     ]
     logging.info("Saving data")
-    org_labels_expanded_df.to_csv(f"{PROJECT_DIR}/inputs/data/cb_processed.csv")
+    (
+        org_labels_expanded_df.reset_index(drop=False)
+        .rename(columns={"index": "cb_id"})
+        .to_csv(f"{PROJECT_DIR}/inputs/data/crunchbase/cb_processed.csv", index=False)
+    )

@@ -73,6 +73,10 @@ def get_crunchbase_industry_pred():
     )
 
 
+def get_crunchbase_processed():
+    return pd.read_csv(f"{PROJECT_DIR}/inputs/data/crunchbase/cb_processed.csv")
+
+
 def get_cb_ch_organisations(creative=True):
 
     SIC_IND_LOOKUP = get_cis_lookup()
