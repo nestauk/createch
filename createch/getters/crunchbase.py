@@ -22,7 +22,11 @@ RUN_ID: int = createch.config["flows"]["nesta"]["run_id"]
 
 
 def get_crunchbase_orgs():
-    return pd.read_csv(f"{CB_PATH}/crunchbase_organisations.csv")
+    return (
+        pd.read_csv(f"{CB_PATH}/crunchbase_organisations.csv")
+        .drop_duplicates("id")
+        .reset_index(drop=True)
+    )
 
 
 def get_crunchbase_tokenised():
