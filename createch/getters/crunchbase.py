@@ -73,6 +73,23 @@ def get_crunchbase_industry_pred():
     )
 
 
+def make_long_description(cb):
+
+    cb_ = cb.copy().dropna(axis=0, subset=["short_description"])
+    cb_["descr_combined"] = [
+        row["long_description"]
+        if pd.isnull(row["long_description"]) == False
+        else row["short_description"]
+        for _id, row in cb_.iterrows()
+    ]
+    return cb_.set_index("id")["descr_combined"].to_dict()
+
+
+def get_crunchbase_description():
+
+    return make_long_description(get_crunchbase_orgs())
+
+
 def get_crunchbase_processed():
     return pd.read_csv(f"{PROJECT_DIR}/inputs/data/crunchbase/cb_processed.csv")
 
