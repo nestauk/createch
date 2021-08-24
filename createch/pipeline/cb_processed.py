@@ -29,9 +29,9 @@ def make_org_description_lu(orgs):
 
 
 createch_names = [
-    "content_media",
+    "creative_content",
     "ai_data",
-    "consumers_products",
+    "creative_services",
     "computing",
     "blockchain",
 ]
@@ -73,10 +73,10 @@ tagged_segment_lookup = {
     "simulation": "computing",
     "ai": "ai_data",
     "crypto": "blockchain",
-    "immersive": "content_media",
-    "visual_effects": "content_media",
-    "web": "consumers_products",
-    "3d_printing": "services",
+    "immersive": "creative_content",
+    "visual_effects": "creative_content",
+    "web": "creative_services",
+    "3d_printing": "creative_services",
 }
 
 if __name__ == "__main__":
