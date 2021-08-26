@@ -73,7 +73,7 @@ def label_all_creative(orgs_ch, cb_orgs, vect_fit, best_estimator, y_cols):
 
     pred_creative["sector_label"] = [
         ch_sector
-        if (pd.isnull(ch_sector) == False) & (ch_sector != "other")
+        if (pd.isnull(ch_sector) is False) & (ch_sector != "other")
         else r[1].idxmax()
         for r, ch_sector in zip(pred_creative.iterrows(), ch_sector)
     ]
