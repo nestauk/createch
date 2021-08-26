@@ -5,6 +5,7 @@ from functools import lru_cache
 from typing import Dict
 
 import geopandas as gp
+import numpy as np
 import pandas as pd
 from metaflow import namespace, Run
 
@@ -21,11 +22,33 @@ RUN_ID: int = createch.config["flows"]["nesta"]["run_id"]
 
 
 def get_crunchbase_orgs():
-    return (
-        pd.read_csv(f"{CB_PATH}/crunchbase_organisations.csv")
+    orgs = (
+        pd.read_csv(
+            f"{CB_PATH}/crunchbase_organisations.csv",
+            parse_dates=["founded_on", "updated_at"],
+        )
         .drop_duplicates("id")
         .reset_index(drop=True)
     )
+
+    bads = []
+    for n, v in enumerate(orgs["founded_on"]):
+        if pd.isnull(v) is False:
+            if "00" not in v:
+                bads.append(n)
+
+    logging.info(f"removing {len(bads)} scrambled observations")
+
+    orgs_clean = orgs.iloc[
+        [n for n, i in enumerate(orgs.index) if n not in bads], :
+    ].reset_index(drop=True)
+
+    orgs_clean["founded_on"] = pd.to_datetime(orgs_clean["founded_on"])
+    orgs_clean["founded_year"] = [
+        x.year if pd.isnull(x) is False else np.nan for x in orgs_clean["founded_on"]
+    ]
+
+    return orgs_clean
 
 
 def get_crunchbase_tokenised():
@@ -77,7 +100,7 @@ def make_long_description(cb):
     cb_ = cb.copy().dropna(axis=0, subset=["short_description"])
     cb_["descr_combined"] = [
         row["long_description"]
-        if pd.isnull(row["long_description"]) == False
+        if pd.isnull(row["long_description"]) is False
         else row["short_description"]
         for _id, row in cb_.iterrows()
     ]
