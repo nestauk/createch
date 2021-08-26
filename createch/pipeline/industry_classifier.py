@@ -81,7 +81,7 @@ def label_all_creative(orgs_ch, cb_orgs, vect_fit, best_estimator, y_cols):
     return pred_creative
 
 
-if __name__ == "__main__":
+def predict_industries():
     logging.info("Making labelled dataset")
     orgs_ch = get_cb_ch_organisations(creative=True)
     cb_orgs = get_crunchbase_orgs()
@@ -132,3 +132,7 @@ if __name__ == "__main__":
     labelled_all.to_csv(
         f"{PROJECT_DIR}/outputs/data/crunchbase/predicted_industries.csv"
     )
+
+
+if __name__ == "__main__":
+    predict_industries()

@@ -5,7 +5,6 @@ from functools import lru_cache
 from typing import Dict
 
 import geopandas as gp
-from numpy import index_exp
 import pandas as pd
 from metaflow import namespace, Run
 
@@ -63,7 +62,8 @@ def get_crunchbase_orgs_cats_all():
 
 def get_crunchbase_topics():
     return pd.read_csv(
-        f"{PROJECT_DIR}/outputs/data/crunchbase/crunchbase_topic_mix.csv", index_col=0
+        f"{PROJECT_DIR}/outputs/data/crunchbase/crunchbase_topic_mix.csv",
+        index_col=0,
     )
 
 
@@ -74,7 +74,6 @@ def get_crunchbase_industry_pred():
 
 
 def make_long_description(cb):
-
     cb_ = cb.copy().dropna(axis=0, subset=["short_description"])
     cb_["descr_combined"] = [
         row["long_description"]

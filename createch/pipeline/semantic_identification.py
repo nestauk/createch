@@ -3,7 +3,6 @@
 import json
 import logging
 
-import gensim
 import numpy as np
 
 from createch import PROJECT_DIR
@@ -126,7 +125,8 @@ def make_semantic_labels(source, thres):
 
 
 if __name__ == "__main__":
-    thres = [0.8, 0.9]
-    for n, source in enumerate(["gtr", "crunchbase"]):
+    thres = [0.8, 0.92]
+    for n, source in enumerate(["crunchbase"]):
+        # for n, source in enumerate(["gtr", "crunchbase"]):
         logging.info(source)
-        make_semantic_labels(source, thres=thres[n])
+        make_semantic_labels(source, thres=thres[1])

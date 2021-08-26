@@ -55,12 +55,12 @@ def save_model_outputs(
     # doc_to_cluster_lookup = {doc[0]: k for k, v in clusters.items() for doc in v}
 
     save_model(topsbm, f"outputs/models/{source}/{source}_topsbm_creative")
-    topic_mix_df.to_csv(f"{PROJECT_DIR}/outputs/data/{source}/{source}_topic_mix.csv")
+    topic_mix.to_csv(f"{PROJECT_DIR}/outputs/data/{source}/{source}_topic_mix.csv")
     # save_lookup(doc_to_cluster_lookup, f"outputs/data/{source}/project_cluster_lookup")
 
 
-if __name__ == "__main__":
-
+def topic_model_creative():
+    """Partitions crunchbase tags and identifies creative ones, trains topic model on creative firms."""
     logging.info("Making and partitioning crunchbase network")
     cat_coocc = (
         get_crunchbase_orgs_cats_all()
@@ -96,3 +96,7 @@ if __name__ == "__main__":
     logging.info(topic_mix_df.head())
 
     save_model_outputs(cb_top_sbm, topic_mix_df, "crunchbase")
+
+
+if __name__ == "__main__":
+    topic_model_creative()

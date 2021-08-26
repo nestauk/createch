@@ -6,7 +6,7 @@ def make_org_description_lu(orgs):
 
     descr = {
         r["id"]: r["long_description"]
-        if pd.isnull(r["long_description"]) == True
+        if pd.isnull(r["long_description"]) == False
         else r["short_description"]
         for _, r in orgs.iterrows()
     }

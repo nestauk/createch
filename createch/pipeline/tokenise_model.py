@@ -64,16 +64,22 @@ def read_process_text(source: str) -> dict:
     return id_tokenised_lookup
 
 
+def process_model(source):
+    """Processes, models and saves outputs for a source"""
+
+    tokenised_lookup = read_process_text(source)
+
+    logging.info("Training w2vec model")
+    w2v = Word2Vec(list(tokenised_lookup.values()))
+
+    logging.info("Saving w2vec model")
+    make_dir(f"outputs/data/{source}")
+    make_dir(f"outputs/models/{source}")
+
+    save_model(w2v, f"outputs/models/{source}/{source}_w2v")
+
+
 if __name__ == "__main__":
 
     for source in ["gtr", "crunchbase"]:
-        make_dir(f"outputs/data/{source}")
-        make_dir(f"outputs/models/{source}")
-
-        tokenised_lookup = read_process_text(source)
-
-        logging.info("Training w2vec model")
-        w2v = Word2Vec(list(tokenised_lookup.values()))
-
-        logging.info("Saving w2vec model")
-        save_model(w2v, f"outputs/models/{source}/{source}_w2v")
+        process_model(source)
