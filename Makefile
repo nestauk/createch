@@ -1,4 +1,4 @@
-SHELL := /bin/bash
+export SHELL := /bin/bash
 
 # Detect how to open things depending on our OS
 OS = $(shell uname -s)
@@ -12,6 +12,7 @@ PROFILE = default
 # Import env variables
 include .env.shared
 include .env
+export BASE = $(shell pwd)
 
 # Allow us to execute make commands from within our project's conda env
 # TODO: add over-ride based on some environment variable?
@@ -19,6 +20,18 @@ include .env
 define execute_in_env
 	source bin/conda_activate.sh && conda_activate && $1
 endef
+
+.PHONY: fetch-daps1
+## Fetch GtR and crunchbase data from DAPS1
+fetch-daps1:
+	MYSQL_CONFIG=$(MYSQL_CONFIG) python createch/pipeline/fetch_daps1_data/flow.py --no-pylint\
+	 --environment=conda\
+	 run
+
+.PHONY: jacchammer
+## Fuzzy matching pipelines (match GtR & Crunchbase to Companies House)
+jacchammer:
+	$(MAKE) -C createch/pipeline/jacchammer
 
 .PHONY: init
 ## Fully initialise a project: install; setup github repo; setup S3 bucket

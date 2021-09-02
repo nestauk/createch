@@ -1,18 +1,21 @@
 import json
 import logging
-import os
-
+from functools import lru_cache
+from typing import Dict
 
 import pandas as pd
+from metaflow import namespace, Run
 
+import createch
 from createch import PROJECT_DIR
 from createch.getters.daps import fetch_daps_table, save_daps_table
 from createch.getters.gtr import get_cis_lookup
+from createch.pipeline.fetch_daps1_data.cb_utils import CB_PATH
 
-CB_PATH = f"{PROJECT_DIR}/inputs/data/crunchbase"
+logger = logging.getLogger(__name__)
+namespace(None)
 
-if os.path.exists(CB_PATH) is False:
-    os.makedirs(CB_PATH)
+RUN_ID: int = createch.config["flows"]["nesta"]["run_id"]
 
 
 def get_crunchbase_orgs():
@@ -38,6 +41,65 @@ def get_crunchbase_vocabulary():
         f"{PROJECT_DIR}/outputs/data/crunchbase/crunchbase_vocabulary.json", "r"
     ) as infile:
         return json.load(infile)
+
+def get_crunchbase_orgs_cats_uk():
+    return pd.read_csv(
+        f"{PROJECT_DIR}/inputs/data/crunchbase/crunchbase_organizations_categories.csv"
+    )
+
+
+def get_crunchbase_orgs_cats_all():
+
+    return fetch_daps_table("crunchbase_organizations_categories")
+
+
+def get_crunchbase_topics():
+    return pd.read_csv(
+        f"{PROJECT_DIR}/outputs/data/crunchbase/crunchbase_topic_mix.csv", index_col=0
+    )
+
+
+def get_crunchbase_industry_pred():
+    return pd.read_csv(
+        f"{PROJECT_DIR}/outputs/data/crunchbase/predicted_industries.csv"
+    )
+
+
+def get_cb_ch_organisations(creative=True):
+
+    SIC_IND_LOOKUP = get_cis_lookup()
+
+    uk_orgs = set(get_crunchbase_orgs()["id"])
+
+    cb_ch = pd.read_csv(
+        f"{PROJECT_DIR}/inputs/data/crunchbase/crunchbase_ch_organisations.csv",
+        dtype={"SIC4_code": str},
+    )
+
+    cb_ch = (
+        cb_ch.loc[cb_ch["cb_id"].isin(uk_orgs)][
+            [
+                "cb_id",
+                "sim_mean",
+                "cb_name",
+                "company_number",
+                "ch_name",
+                "SIC4_code",
+                "ttwa_code",
+                "ttwa_name",
+            ]
+        ]
+        .drop_duplicates(subset=["cb_id"])
+        .assign(creative_sector=lambda df: df["SIC4_code"].map(SIC_IND_LOOKUP))
+    )
+
+    if creative is True:
+        cb_ch = cb_ch.dropna(axis=0, subset=["creative_sector"]).reset_index(drop=True)
+
+    else:
+        cb_ch = cb_ch.fillna(value={"creative_sector": "other"})
+
+    return cb_ch
 
 
 def get_crunchbase_orgs_cats_uk():
@@ -135,7 +197,12 @@ def fetch_save_crunchbase():
     save_daps_table(cb_funding_rounds_uk, "crunchbase_funding_rounds", CB_PATH)
     save_daps_table(cb_org_cats_uk, "crunchbase_organizations_categories", CB_PATH)
     save_daps_table(category_group, "crunchbase_category_groups", CB_PATH)
+    
+@lru_cache()
+def _flow(run_id: int) -> Run:
+    return Run(f"CreatechNestaGetter/{run_id}")
 
 
-if __name__ == "__main__":
-    fetch_save_crunchbase()
+def get_name() -> Dict[str, str]:
+    """Lookup between Crunchbase organisation ID and name."""
+    return _flow(RUN_ID).data.crunchbase_names

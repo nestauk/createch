@@ -1,6 +1,6 @@
 numpy
 scipy
-pandas
+pandas>1
 matplotlib
 altair
 metaflow
@@ -9,7 +9,6 @@ tqdm
 filelock
 typer
 sh
-git+ssh://git@github.com/nestauk/data_getters.git
 gensim==3.8
 spacy
 networkx

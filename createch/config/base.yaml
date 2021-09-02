@@ -43,3 +43,13 @@ gtr_organisations:
       " sch ",
       "centre",
     ]
+flows:
+  nesta:
+    run_id: 1319
+  companies_house:
+    run_id: 978
+  jacchammer:
+    gtr:
+      run_id: 1302
+    crunchbase:
+      run_id: 1324
