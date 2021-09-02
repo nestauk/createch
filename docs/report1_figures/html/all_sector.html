@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    .error {
+        color: red;
+    }
+  </style>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm//vega@5"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm//vega-lite@4.8.1"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm//vega-embed@6"></script>
+</head>
+<body>
+  <div id="vis"></div>
+  <script>
+    (function(vegaEmbed) {
+      var spec = {"config": {"view": {"continuousWidth": 400, "continuousHeight": 300}, "axis": {"labelFontSize": 14, "titleFontSize": 16}, "legend": {"labelFontSize": 14, "titleFontSize": 16}}, "data": {"name": "data-5e552276c43d6dba2db2600c4deedf06"}, "mark": "bar", "encoding": {"color": {"type": "nominal", "field": "Category"}, "x": {"type": "quantitative", "field": "projects", "title": "Number of project participations"}, "y": {"type": "nominal", "field": "creative_sector", "sort": {"field": "projects", "op": "sum", "order": "descending"}, "title": null}}, "height": 250, "width": 450, "$schema": "https://vega.github.io/schema/vega-lite/v4.8.1.json", "datasets": {"data-5e552276c43d6dba2db2600c4deedf06": [{"creative_sector": "Advertising and marketing", "variable": "consumers_products", "projects": 35, "Category": "Creative services"}, {"creative_sector": "Advertising and marketing", "variable": "content_media", "projects": 32, "Category": "Content and Media"}, {"creative_sector": "Advertising and marketing", "variable": "ai_data", "projects": 28, "Category": "Data and AI"}, {"creative_sector": "Advertising and marketing", "variable": "computing", "projects": 15, "Category": "Computing"}, {"creative_sector": "Advertising and marketing", "variable": "blockchain", "projects": 1, "Category": "Blockchain"}, {"creative_sector": "Architecture", "variable": "computing", "projects": 31, "Category": "Computing"}, {"creative_sector": "Architecture", "variable": "content_media", "projects": 27, "Category": "Content and Media"}, {"creative_sector": "Architecture", "variable": "consumers_products", "projects": 19, "Category": "Creative services"}, {"creative_sector": "Architecture", "variable": "ai_data", "projects": 10, "Category": "Data and AI"}, {"creative_sector": "Design product graphic and fashion design", "variable": "consumers_products", "projects": 44, "Category": "Creative services"}, {"creative_sector": "Design product graphic and fashion design", "variable": "ai_data", "projects": 32, "Category": "Data and AI"}, {"creative_sector": "Design product graphic and fashion design", "variable": "computing", "projects": 27, "Category": "Computing"}, {"creative_sector": "Design product graphic and fashion design", "variable": "content_media", "projects": 25, "Category": "Content and Media"}, {"creative_sector": "Film TV video radio and photography", "variable": "content_media", "projects": 252, "Category": "Content and Media"}, {"creative_sector": "Film TV video radio and photography", "variable": "ai_data", "projects": 108, "Category": "Data and AI"}, {"creative_sector": "Film TV video radio and photography", "variable": "consumers_products", "projects": 76, "Category": "Creative services"}, {"creative_sector": "Film TV video radio and photography", "variable": "computing", "projects": 44, "Category": "Computing"}, {"creative_sector": "Film TV video radio and photography", "variable": "blockchain", "projects": 4, "Category": "Blockchain"}, {"creative_sector": "IT software and computer services", "variable": "ai_data", "projects": 835, "Category": "Data and AI"}, {"creative_sector": "IT software and computer services", "variable": "consumers_products", "projects": 717, "Category": "Creative services"}, {"creative_sector": "IT software and computer services", "variable": "computing", "projects": 653, "Category": "Computing"}, {"creative_sector": "IT software and computer services", "variable": "content_media", "projects": 528, "Category": "Content and Media"}, {"creative_sector": "IT software and computer services", "variable": "blockchain", "projects": 64, "Category": "Blockchain"}, {"creative_sector": "Museums galleries and libraries", "variable": "content_media", "projects": 220, "Category": "Content and Media"}, {"creative_sector": "Museums galleries and libraries", "variable": "consumers_products", "projects": 98, "Category": "Creative services"}, {"creative_sector": "Museums galleries and libraries", "variable": "ai_data", "projects": 70, "Category": "Data and AI"}, {"creative_sector": "Museums galleries and libraries", "variable": "computing", "projects": 38, "Category": "Computing"}, {"creative_sector": "Music performing and visual arts", "variable": "content_media", "projects": 199, "Category": "Content and Media"}, {"creative_sector": "Music performing and visual arts", "variable": "consumers_products", "projects": 82, "Category": "Creative services"}, {"creative_sector": "Music performing and visual arts", "variable": "ai_data", "projects": 64, "Category": "Data and AI"}, {"creative_sector": "Music performing and visual arts", "variable": "computing", "projects": 31, "Category": "Computing"}, {"creative_sector": "Music performing and visual arts", "variable": "blockchain", "projects": 2, "Category": "Blockchain"}, {"creative_sector": "Other", "variable": "ai_data", "projects": 1388, "Category": "Data and AI"}, {"creative_sector": "Other", "variable": "computing", "projects": 879, "Category": "Computing"}, {"creative_sector": "Other", "variable": "consumers_products", "projects": 855, "Category": "Creative services"}, {"creative_sector": "Other", "variable": "content_media", "projects": 646, "Category": "Content and Media"}, {"creative_sector": "Other", "variable": "blockchain", "projects": 102, "Category": "Blockchain"}, {"creative_sector": "Publishing", "variable": "content_media", "projects": 25, "Category": "Content and Media"}, {"creative_sector": "Publishing", "variable": "consumers_products", "projects": 23, "Category": "Creative services"}, {"creative_sector": "Publishing", "variable": "ai_data", "projects": 22, "Category": "Data and AI"}, {"creative_sector": "Publishing", "variable": "computing", "projects": 16, "Category": "Computing"}, {"creative_sector": "Publishing", "variable": "blockchain", "projects": 4, "Category": "Blockchain"}]}};
+      var embedOpt = {"mode": "vega-lite"};
+
+      function showError(el, error){
+          el.innerHTML = ('<div class="error" style="color:red;">'
+                          + '<p>JavaScript Error: ' + error.message + '</p>'
+                          + "<p>This usually means there's a typo in your chart specification. "
+                          + "See the javascript console for the full traceback.</p>"
+                          + '</div>');
+          throw error;
+      }
+      const el = document.getElementById('vis');
+      vegaEmbed("#vis", spec, embedOpt)
+        .catch(error => showError(el, error));
+    })(vegaEmbed);
+
+  </script>
+</body>
+</html>

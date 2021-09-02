@@ -9,7 +9,7 @@ tqdm
 filelock
 typer
 sh
-gensim
+gensim==3.8
 spacy
 networkx
 cdlib
