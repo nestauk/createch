@@ -7,6 +7,7 @@ from typing import Dict
 import geopandas as gp
 import numpy as np
 import pandas as pd
+from currency_converter import CurrencyConverter
 from metaflow import namespace, Run
 
 import createch
@@ -142,6 +143,7 @@ def get_cb_ch_organisations(creative=True):
         ]
         .drop_duplicates(subset=["cb_id"])
         .assign(creative_sector=lambda df: df["SIC4_code"].map(SIC_IND_LOOKUP))
+        .query("sim_mean > 85")
     )
 
     if creative is True:
@@ -244,3 +246,38 @@ def get_cb_ttwa(overwrite=False):
             return pd.read_csv(cb_ttwa_path)
         else:
             return pd.read_csv(cb_ttwa_path)
+
+
+def get_createch_topic_list():
+    """Reads a list with createch topics"""
+    with open(
+        f"{PROJECT_DIR}/inputs/data/crunchbase/crunchbase_createch_topics.json", "r"
+    ) as infile:
+        return json.load(infile)
+
+
+def get_funding_rounds():
+    """Gets funding rounds and converts to GBP"""
+
+    funding = pd.read_csv(
+        f"{PROJECT_DIR}/inputs/data/crunchbase/crunchbase_funding_rounds.csv",
+        parse_dates=["announced_on"],
+    )
+    funding = (
+        funding.query("announced_on < '2021-01-01'")
+        .query("announced_on > '2010-01-01'")
+        .reset_index(drop=True)
+    )
+
+    c = CurrencyConverter(fallback_on_missing_rate=True)
+
+    funding["raised_amount_gbp"] = [
+        c.convert(row["raised_amount_usd"], "USD", "GBP", date=row["announced_on"])
+        for _, row in funding.iterrows()
+    ]
+
+    funding["year"] = [
+        x.year if pd.isnull(x) is False else np.nan for x in funding["announced_on"]
+    ]
+
+    return funding

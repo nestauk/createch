@@ -25,6 +25,7 @@
 import logging
 
 import altair as alt
+import numpy as np
 import pandas as pd
 from createch import PROJECT_DIR
 from createch.getters.crunchbase import (
@@ -32,6 +33,7 @@ from createch.getters.crunchbase import (
     get_crunchbase_orgs,
     get_crunchbase_industry_pred,
     get_cb_ch_organisations,
+    get_cb_ttwa,
 )
 from createch.pipeline.topic_modelling import filter_topics
 from createch.pipeline.network_analysis import make_network_from_coocc, make_topic_coocc
@@ -58,16 +60,20 @@ def make_org_description_lu(orgs):
 
 # %%
 # Read data
+
+# CB topics were trained on all organisations with a CI sector or a CI category
+
 cb_topics, filtered_topics = filter_topics(
     get_crunchbase_topics(), presence_thr=0.1, prevalence_thr=0.1
 )
 orgs = get_crunchbase_orgs()
 org_descr_lookup = make_org_description_lu(orgs)
 
+# These are the semantically tagged orgs
+
 cb_area_tagged = get_lookup("outputs/data/crunchbase/crunchbase_area_tagged")
 
 comp_industry = get_crunchbase_industry_pred()
-cb_ch_orgs = get_cb_ch_organisations(creative=False)
 
 createch_names = [
     "content_media",
@@ -121,9 +127,8 @@ org_labels = pd.DataFrame(
     columns=createch_names,
 )
 
-# +
+
 # Add semantic tagging
-# -
 
 tagged_segment_lookup = {
     "robotics": "to_drop",
@@ -158,11 +163,14 @@ comp_labelled_semantic_ci = cb_comp_labelled_semantic.loc[
     cb_comp_labelled_semantic.index.isin(org_labels.index)
 ]
 
+# %%
+# For each organisation, we check if the topic model or semantic categorisation yielded a result.
+
 org_labels_expanded = []
 
 createch_labels = createch_names.copy()
 
-for _id in org_labels.index:
+for _id in orgs["id"]:
     consolidated_sectors = []
     for sector in createch_labels:
         if (_id in org_labels.index) & (_id in comp_labelled_semantic_ci.index):
@@ -172,16 +180,105 @@ for _id in org_labels.index:
                 consolidated_sectors.append(0)
             else:
                 consolidated_sectors.append(1)
-        else:
+        elif _id in org_labels.index:
             consolidated_sectors.append(org_labels.loc[_id, sector])
+        else:
+            consolidated_sectors.append(0)
     org_labels_expanded.append(
         pd.Series(consolidated_sectors, index=createch_labels, name=_id)
     )
 
+# %%
+org_labels_expanded_df = (
+    pd.DataFrame(org_labels_expanded)
+    .assign(no_createch=lambda df: (df.sum(axis=1) == 0).astype(int))
+    .stack()
+    .reset_index(level=1)
+    .rename(columns={"level_1": "createch_sector", 0: "value"})
+)
 
-org_labels_expanded_df = pd.DataFrame(org_labels_expanded)
-# -
+# %%
+cb_ch_orgs = get_cb_ch_organisations(creative=False)
+cb_ttwa = get_cb_ttwa().set_index("id").to_dict(orient="dict")
+cb_metadata = orgs.set_index("id")[["name", "founded_on", "employee_count"]].to_dict(
+    orient="dict"
+)
 
+# %%
+# We add the predictive labels
+
+org_labels_expanded_df = (
+    org_labels_expanded_df.assign(
+        tech=lambda df: df.index.map(
+            comp_industry.set_index("id")["IT software and computer services"] > 0.15
+        )
+    )
+    .assign(
+        sic_sector=lambda df: df.index.map(
+            cb_ch_orgs.set_index("cb_id")["creative_sector"]
+        )
+    )
+    .assign(ttwa_name=lambda df: df.index.map(cb_ttwa["ttwa11nm"]))
+    .assign(ttwa_code=lambda df: df.index.map(cb_ttwa["ttwa11cd"]))
+)
+
+
+for var in cb_metadata.keys():
+    org_labels_expanded_df[var] = org_labels_expanded_df.index.map(cb_metadata[var])
+
+org_labels_expanded_df["year"] = [
+    int(x.split("-")[0]) if pd.isnull(x) == False else np.nan
+    for x in org_labels_expanded_df["founded_on"]
+]
+
+org_labels_expanded_df.to_csv(f"{PROJECT_DIR}/inputs/data/cb_processed.csv")
+
+# %%
+
+# %%
+
+# %%
+
+# %%
+
+# %%
+
+# %%
+# Next steps
+
+# Melt keeping sectors
+
+# %%
+# org_labels_expanded = []
+
+# createch_labels = createch_names.copy()
+
+# for _id in org_labels.index:
+#     consolidated_sectors = []
+#     for sector in createch_labels:
+#         if (_id in org_labels.index) & (_id in comp_labelled_semantic_ci.index):
+#             if (org_labels.loc[_id, sector] == 0) & (
+#                 comp_labelled_semantic_ci.loc[_id, sector] == 0
+#             ):
+#                 consolidated_sectors.append(0)
+#             else:
+#                 consolidated_sectors.append(1)
+#         else:
+#             consolidated_sectors.append(org_labels.loc[_id, sector])
+#     org_labels_expanded.append(
+#         pd.Series(consolidated_sectors, index=createch_labels, name=_id)
+#     )
+
+
+# org_labels_expanded_df = pd.DataFrame(org_labels_expanded)
+
+# %%
+# ids with at least one createch
+
+semant_ids = [k for k, v in cb_area_tagged_2.items() if len(v) > 0]
+
+
+# %%
 org_labels_expanded_df.sum()
 
 # +
@@ -190,11 +287,107 @@ high_tech = set(
 )
 
 org_labels_expanded_df["is_createch"] = org_labels_expanded_df.sum(axis=1) > 0
-org_labels_expanded_df = org_labels_expanded_df.query("is_createch==True")
+# org_labels_expanded_df = org_labels_expanded_df.query("is_createch==True")
 
 org_labels_expanded_df_tech = org_labels_expanded_df.loc[
     org_labels_expanded_df.index.isin(high_tech)
 ]
+
+# org_labels_expanded_df_tech
+
+# %%
+# All CB orgs with more than 75 in their combined description
+
+cb_ch_orgs = (
+    cb_ch_orgs.assign(descr=lambda df: df["cb_id"].map(org_descr_lookup))
+    .dropna(axis=0, subset=["descr"])
+    .reset_index(drop=True)
+)
+cb_ch_orgs["long_descr"] = [len(x) > 75 for x in cb_ch_orgs["descr"]]
+
+# cb_ch_orgs.groupby('creative_sector')['long_descr'].mean()
+
+# cb_ch_orgs.loc[
+#     cb_ch_orgs['ttwa_name'].isin(cb_ch_orgs['ttwa_name'].value_counts().index[:20])].groupby('ttwa_name')['long_descr'].mean().sort_values(ascending=False)
+
+# %%
+
+# %%
+
+# %%
+
+# %%
+
+# %%
+
+# %%
+
+# %%
+
+# %%
+
+# %%
+cb_ch_orgs_long = (
+    cb_ch_orgs.query("long_descr==True")
+    .drop(axis=1, labels=["long_descr"])
+    .reset_index(drop=True)
+)
+
+cb_ch_orgs_long
+
+# %%
+# Here we get, for each company, which is its top createch topic
+
+createch_topic_lookup = {
+    topic: label
+    for label, topic_group in zip(createch_names, createch_topics)
+    for topic in topic_group
+}
+
+# %%
+len(set(cb_topics.index) & set(org_labels_expanded_df_tech.index))
+
+# %%
+createch_assigner = (
+    cb_topics.stack()
+    .reset_index(name="weight")
+    .assign(createch_topic=lambda df: df["level_1"].map(createch_topic_lookup))
+    .groupby(["level_0", "createch_topic"])["weight"]
+    .sum()
+    .unstack(level="createch_topic")
+    .idxmax(axis=1)
+).to_dict()
+
+org_labels_expanded_df_tech["top_createch"] = [
+    createch_assigner[_id]
+    if (_id in createch_assigner.keys()) & (row["is_createch"] == True)
+    else row[createch_labels].idxmax()
+    if row["is_createch"] == True
+    else "not_createch"
+    for _id, row in org_labels_expanded_df_tech.iterrows()
+]
+
+createch_assigner_filter = org_labels_expanded_df_tech["top_createch"].to_dict()
+
+# %%
+# # Assignment test
+
+# (org_labels_expanded_df_tech
+#  .reset_index(drop=False)
+#  .drop(axis=1,labels=['is_createch'])
+#  .melt(id_vars=['index','top_createch'])
+#  .groupby(['top_createch','variable'])['value'].mean()
+# )
+
+# %%
+cb_ch_orgs_long["createch_sector"] = cb_ch_orgs_long["cb_id"].map(
+    createch_assigner_filter
+)
+# cb_ch_orgs_long['createch_sector'] = cb_ch_orgs_long['createch_sector'].fillna('not_createch')
+
+pd.crosstab(
+    cb_ch_orgs_long["createch_sector"], cb_ch_orgs_long["creative_sector"], normalize=1
+) * 100
 
 # %%
 # +
@@ -209,7 +402,11 @@ org_labels_expanded_df_tech = org_labels_expanded_df.loc[
 # -
 
 cb_createch_orgs = (
-    cb_ch_orgs.loc[cb_ch_orgs["cb_id"].isin(org_labels_expanded_df_tech.index)]
+    cb_ch_orgs.loc[
+        cb_ch_orgs["cb_id"].isin(
+            org_labels_expanded_df_tech.query("is_createch==True").index
+        )
+    ]
     .rename(columns={"cb_id": "org_id", "cb_name": "org_name"})
     .assign(source="crunchbase")
     .reset_index(drop=True)
@@ -229,3 +426,14 @@ ch_number = set(
 )
 
 len(ch_number.union(set(cb_createch_orgs["company_number"])))
+
+# %%
+len(org_labels_expanded_df_tech)
+
+# %%
+len(set(cb_ch_orgs["cb_id"]) & set(org_labels_expanded_df_tech.index))
+
+# %%
+cb_createch_orgs
+
+# %%

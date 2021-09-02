@@ -26,3 +26,7 @@ webdriver-manager
 geopandas
 pymysql
 rtree
+tomotopy
+currency_converter
+spacy
+ratelim

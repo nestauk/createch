@@ -179,3 +179,16 @@ def _flow(run_id: int) -> Run:
 def get_name() -> Dict[str, str]:
     """Lookup between GtR organisation ID and name."""
     return _flow(RUN_ID).data.gtr_names
+
+
+def get_gtr_geo():
+
+    lookup = {
+        "content_media": "creative_content",
+        "consumers_products": "creative_services",
+        "not_createch": "no_createch",
+    }
+
+    geo = pd.read_csv(f"{PROJECT_DIR}/inputs/data/gtr/gtr_geo_counts.csv")
+    geo["variable"] = geo["variable"].replace(lookup)
+    return geo.rename(columns={"0": "n_participations"})
